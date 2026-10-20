@@ -1,0 +1,12 @@
+data/
+figures/
+.DS_Store
+.vscode/
+.venv/
+venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Python virtual environment
+gurcan/
+REP/TOEddies_explication.pptx

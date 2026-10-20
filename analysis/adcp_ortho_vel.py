@@ -1,0 +1,721 @@
+"""
+Orthogonal-velocity figures of the WHIRLS eddies from SADCP and LADCP.
+
+Two ways of looking at an eddy, chosen per section in EDDIES below:
+
+mode = "section"  (straight crossing, e.g. the cyclone CE18)
+    A straight line is fitted through the ship positions of the time window. Every
+    measurement is projected on it: x = distance along the line, and the velocity
+    component perpendicular to the line (positive to the LEFT of the ship's direction of
+    travel) is plotted against distance and depth, like Fig. 3 of Subirade et al. (2023).
+    The TOEddies center and the max-speed radius are projected on the line.
+
+mode = "radial"   (ship going around the eddy, e.g. the anticyclone AE11)
+    A straight line makes no sense. Every measurement is put in the eddy's moving frame
+    (relative to the TOEddies center at that time, smoothed over 3 days), and the velocity
+    orthogonal to the radius -- the azimuthal velocity v_theta, positive anticlockwise -- is
+    plotted against distance to the center and depth (bins of R_BIN_KM). The center is
+    refined from the SADCP data (offset that minimises the radial velocity), because the
+    TOEddies center can be off by ~25 km (Subirade et al. 2023), which smears a radial
+    composite. The same refined center is used for the LADCP.
+
+One SADCP figure and one LADCP figure per section, saved in the eddy's folder in
+figures/eddy_tracks/ (found by looking for tracked_eddy_<name>.csv).
+
+Run:  python eddy_velocity_sections.py            (all eddies)
+      python eddy_velocity_sections.py CE18       (one eddy)
+"""
+
+import os
+import sys
+import glob
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import xarray as xr
+import matplotlib
+if not os.environ.get("DISPLAY"):
+    matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+import matplotlib.lines as mlines
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
+try:
+    import cmocean
+    CMAP = cmocean.cm.balance
+except ImportError:
+    CMAP = "RdBu_r"
+try:
+    import geopandas as gpd
+except ImportError:
+    gpd = None
+
+# =============================================================================
+# Eddies and sections — edit here
+# =============================================================================
+EDDIES = {
+    "CE18": dict(
+        name="CE18_202601601", eddy_type=-1,
+        sections={
+            # straight NE->SW crossing through the center (st. 071 -> 073 -> 074, 13 km from center)
+            "crossing_0716": dict(mode="section", t0="2026-07-16T06:00", t1="2026-07-17T16:00"),
+            # western flank, 54-89 km from the center (st. 044 -> 069)
+            "flank_0710": dict(mode="section", t0="2026-07-10T10:00", t1="2026-07-12T17:00"),
+        }),
+    "AE11": dict(
+        name="AE11_20260514", eddy_type=1,
+        sections={
+            # stations 005-048: 27 to 186 km from the center, all around the eddy
+            "radial_0701_0710": dict(mode="radial", t0="2026-07-01T00:00", t1="2026-07-11T00:00",
+                                     r_limit_km=220),
+        }),
+}
+
+SADCP_AVG = "10min"          # SADCP time averaging (~3 km at 10 kn)
+USE_DETIDED = True           # use UVEL_ADCP_CORTIDE / VVEL_ADCP_CORTIDE when present
+Z_SPLIT = 150.0              # m: OS150 above, OS38 below
+ZMAX_SADCP = 1000.0
+ZMAX_LADCP = 1500.0
+DS_KM = 3.0                  # bin size along a section (SADCP)
+R_BIN_KM = 10.0              # radius bin (radial mode, SADCP)
+LADCP_MAX_GAP_KM = 60.0      # do not interpolate between LADCP stations further apart
+FIT_CENTER = True            # radial mode: refine the TOEddies center from SADCP
+FIT_LAYER = (30.0, 200.0)    # m: layer used to fit the center
+FIT_SEARCH_KM = 60.0         # search +- this offset around the TOEddies center
+CENTER_SMOOTH_DAYS = 3       # running mean on the daily TOEddies centers (they move on a 1/8° grid)
+PROFILE_DEPTHS = [50, 100, 200, 400, 700]   # radial mode: v_theta(r) at these depths
+
+# =============================================================================
+# Paths
+# =============================================================================
+BASE = Path("/home/geosciences/Documents/Gurcan")
+DIR_SADCP = BASE / "data/SADCP"
+SADCP_FILES = {"OS150": DIR_SADCP / "WHIRLS_NB150_TOT_osite.nc",   # full cruise (README)
+               "OS38": DIR_SADCP / "WHIRLS_BB38_TOT_osite.nc"}
+DIR_LADCP = BASE / "data/LADCP/traitement_avec_SADCP"
+DIR_SSH = BASE / "data/SSH"
+DIR_EDDIES = {"TOEDDIES_better_ADT": BASE / "data/TOEDDIES/TOEDDIES_better_ADT",
+              "TOEDDIES": BASE / "data/TOEDDIES/TOEDDIES"}
+FNAME_BATHY = BASE / "WHIRLS_eddies/REP/data/bathymetry/etopo2.nc"
+DIR_TRACKS = BASE / "WHIRLS_eddies/figures/eddy_tracks"
+DIR_CODE = BASE / "WHIRLS_eddies"           # where ladcp_tools.py lives
+
+R_KM = 6371.0
+crs = ccrs.PlateCarree()
+
+
+# =============================================================================
+# Pure geometry (no I/O)
+# =============================================================================
+def to_xy(lon, lat, lon0, lat0):
+    """Local tangent plane, km."""
+    x = np.deg2rad(np.asarray(lon, float) - lon0) * R_KM * np.cos(np.deg2rad(lat0))
+    y = np.deg2rad(np.asarray(lat, float) - lat0) * R_KM
+    return x, y
+
+
+def fit_line(x, y):
+    """Principal axis of the points. Returns origin, along unit vector (oriented in the
+    direction of travel) and normal unit vector (to the LEFT of travel)."""
+    ok = np.isfinite(x) & np.isfinite(y)
+    xm, ym = x[ok].mean(), y[ok].mean()
+    w, vec = np.linalg.eigh(np.cov(np.vstack([x[ok] - xm, y[ok] - ym])))
+    es = vec[:, np.argmax(w)]
+    xi, yi = x[ok][[0, -1]], y[ok][[0, -1]]
+    if (xi[1] - xi[0]) * es[0] + (yi[1] - yi[0]) * es[1] < 0:
+        es = -es
+    en = np.array([-es[1], es[0]])
+    return np.array([xm, ym]), es, en
+
+
+def polar(x, y, u, v):
+    """Radius (km), azimuthal (+ anticlockwise) and radial (+ outward) velocity.
+    x, y: (n,) ; u, v: (n,) or (n, nz)."""
+    r = np.hypot(x, y)
+    rr = np.where(r > 0, r, np.nan)
+    if np.ndim(u) == 2:
+        x, y, rr = x[:, None], y[:, None], rr[:, None]
+    vt = (-u * y + v * x) / rr
+    vr = (u * x + v * y) / rr
+    return r, vt, vr
+
+
+def fit_center(x, y, u, v, r_max, search=FIT_SEARCH_KM, step=2.0, r_min=10.0, nmin=20):
+    """Offset (dx, dy) of the center minimising the fraction of radial kinetic energy."""
+    ok = np.isfinite(x) & np.isfinite(y) & np.isfinite(u) & np.isfinite(v)
+    x, y, u, v = x[ok], y[ok], u[ok], v[ok]
+    best = (np.inf, 0.0, 0.0)
+    for dx in np.arange(-search, search + step / 2, step):
+        for dy in np.arange(-search, search + step / 2, step):
+            r, vt, vr = polar(x - dx, y - dy, u, v)
+            m = (r >= r_min) & (r <= r_max)
+            if m.sum() < nmin:
+                continue
+            cost = np.sum(vr[m] ** 2) / np.sum(vr[m] ** 2 + vt[m] ** 2)
+            if cost < best[0]:
+                best = (cost, dx, dy)
+    return best[1], best[2], best[0]
+
+
+def bin_columns(coord, vals, edges, nmin=1):
+    """Mean of vals (n, nz) in bins of coord. Returns centers, (nbins, nz) mean, counts."""
+    idx = np.digitize(coord, edges) - 1
+    nb = len(edges) - 1
+    out = np.full((nb, vals.shape[1]), np.nan)
+    cnt = np.zeros(nb, int)
+    for b in range(nb):
+        m = idx == b
+        cnt[b] = m.sum()
+        if cnt[b] >= nmin:
+            with np.errstate(all="ignore"):
+                out[b] = np.nanmean(vals[m], axis=0)
+    return 0.5 * (edges[:-1] + edges[1:]), out, cnt
+
+
+def interp_columns(coord, vals, grid, max_gap):
+    """Linear interpolation of station profiles (n, nz) onto grid, not across gaps."""
+    o = np.argsort(coord)
+    c, V = np.asarray(coord)[o], vals[o]
+    out = np.full((len(grid), V.shape[1]), np.nan)
+    for k in range(V.shape[1]):
+        m = np.isfinite(V[:, k])
+        if m.sum() >= 2:
+            cc, vv = c[m], V[m, k]
+            col = np.interp(grid, cc, vv, left=np.nan, right=np.nan)
+            j = np.clip(np.searchsorted(cc, grid), 1, len(cc) - 1)
+            near = np.min(np.abs(grid[:, None] - cc[None, :]), axis=1) <= np.diff(grid).mean() / 2
+            col[((cc[j] - cc[j - 1]) > max_gap) & ~near] = np.nan
+            out[:, k] = col
+        elif m.sum() == 1:
+            out[np.argmin(np.abs(grid - c[m][0])), k] = V[m, k][0]
+    return out
+
+
+# =============================================================================
+# Data loading
+# =============================================================================
+def _find(ds, names, required=True):
+    for n in names:
+        if n in ds.variables:
+            return n
+    low = {k.lower(): k for k in ds.variables}
+    for n in names:
+        if n.lower() in low:
+            return low[n.lower()]
+    if required:
+        raise KeyError(f"None of {names} in {list(ds.variables)}")
+    return None
+
+
+_SADCP_CACHE = {}
+
+
+def load_sadcp_raw(path):
+    """Full-resolution SADCP as Dataset(time, z) with u, v, lat, lon (QC flag == 1)."""
+    if path in _SADCP_CACHE:
+        return _SADCP_CACHE[path]
+    ds = xr.open_dataset(path)
+    tn = _find(ds, ["JULD_ADCP", "TIME", "time", "JULD"])
+    zn = _find(ds, ["DEPH", "DEPTH", "depth"])
+    un = _find(ds, ["UVEL_ADCP_CORTIDE"], required=False) if USE_DETIDED else None
+    vn = _find(ds, ["VVEL_ADCP_CORTIDE"], required=False) if USE_DETIDED else None
+    if un is None or vn is None:
+        un, vn = _find(ds, ["UVEL_ADCP"]), _find(ds, ["VVEL_ADCP"])
+    fn = _find(ds, ["CAS_CURRENT_FLAG"], required=False)
+    print(f"  {Path(path).name}: using {un}, {vn}")
+    tdim = ds[tn].dims[0]
+    U = ds[un].squeeze(drop=True)
+    zdim = [d for d in U.dims if d != tdim][0]
+    u = U.transpose(tdim, zdim).values.astype(float)
+    v = ds[vn].squeeze(drop=True).transpose(tdim, zdim).values.astype(float)
+    traw = ds[tn].values
+    time = (pd.to_datetime(traw) if np.issubdtype(traw.dtype, np.datetime64)
+            else pd.Timestamp("1950-01-01") + pd.to_timedelta(traw.astype(float), unit="D"))
+    if fn is not None:
+        fl = ds[fn].squeeze(drop=True)
+        fl = fl.transpose(tdim, zdim).values if zdim in fl.dims else fl.values[:, None]
+        good = (fl == 1) if np.issubdtype(fl.dtype, np.number) else \
+            np.char.strip(np.char.decode(fl.astype("S"), "ascii", "ignore")) == "1"
+        good = np.broadcast_to(good, u.shape)
+        u, v = np.where(good, u, np.nan), np.where(good, v, np.nan)
+    u[np.abs(u) > 5] = np.nan
+    v[np.abs(v) > 5] = np.nan
+    zda = ds[zn].squeeze(drop=True)
+    z = np.abs(np.nanmedian(zda.transpose(tdim, zdim).values, axis=0) if zda.ndim == 2
+               else zda.values).astype(float)
+    keepz = np.isfinite(z)
+    lat = ds[_find(ds, ["LATITUDE", "lat"])].squeeze(drop=True).values.astype(float)
+    lon = ds[_find(ds, ["LONGITUDE", "lon"])].squeeze(drop=True).values.astype(float)
+    lat = np.where(np.abs(lat) <= 90, lat, np.nan)
+    lon = np.where(np.abs(lon) <= 360, lon, np.nan)
+    lon = np.where(lon > 180, lon - 360, lon)
+    out = xr.Dataset({"u": (("time", "z"), u[:, keepz]), "v": (("time", "z"), v[:, keepz]),
+                      "lat": ("time", lat), "lon": ("time", lon)},
+                     coords={"time": np.asarray(time, "datetime64[ns]"), "z": z[keepz]})
+    out = out.isel(time=np.asarray(pd.notna(time))).sortby("time").sortby("z")
+    out = out.isel(time=~pd.Index(out.time.values).duplicated())
+    ds.close()
+    _SADCP_CACHE[path] = out
+    return out
+
+
+def sadcp_window(t0, t1):
+    """OS150 above Z_SPLIT + OS38 below, averaged over SADCP_AVG, inside [t0, t1]."""
+    parts = []
+    for inst, f in SADCP_FILES.items():
+        if not f.exists():
+            print(f"  ! missing {f}")
+            continue
+        d = load_sadcp_raw(f).sel(time=slice(t0, t1))
+        d = d.resample(time=SADCP_AVG).mean()
+        zz = d.z.values
+        keep = zz <= Z_SPLIT if inst == "OS150" else (zz > Z_SPLIT) & (zz <= ZMAX_SADCP)
+        d = d.isel(z=np.where(keep)[0])
+        parts.append(d)
+    if not parts:
+        raise FileNotFoundError("no SADCP file found")
+    base = parts[0]
+    out = base
+    for p in parts[1:]:
+        p = p.reindex(time=base.time)
+        out = xr.Dataset({"u": xr.concat([out.u, p.u], "z"), "v": xr.concat([out.v, p.v], "z"),
+                          "lat": out.lat.fillna(p.lat), "lon": out.lon.fillna(p.lon)})
+    out = out.sortby("z")
+    ok = np.isfinite(out.lat.values) & np.isfinite(out.lon.values) & np.isfinite(out.u.values).any(1)
+    return out.isel(time=ok)
+
+
+def load_ladcp(t0, t1):
+    """Stations cast in [t0, t1]: list of dicts with station, time, lon, lat, z, u, v."""
+    sys.path.insert(0, str(DIR_CODE))
+    from ladcp_tools import load_all_stations, read_lad
+    st = load_all_stations(str(DIR_LADCP) + "/")
+    tcol = "datetime" if "datetime" in st.columns else st.select_dtypes("datetime").columns[0]
+    st = st[(st[tcol] >= pd.Timestamp(t0)) & (st[tcol] <= pd.Timestamp(t1))]
+    out = []
+    for _, s in st.iterrows():
+        f = s["file"] if "file" in s and str(s["file"]).endswith(".lad") else \
+            os.path.join(str(DIR_LADCP), str(s.station), f"{s.station}.lad")
+        try:
+            _, df = read_lad(f)
+        except Exception as e:
+            print(f"  ! LADCP {s.station}: {e}")
+            continue
+        cols = {c.lower(): c for c in df.columns}
+        zc = next((cols[c] for c in ("z", "depth", "dep", "pressure", "p") if c in cols), None)
+        uc = next((cols[c] for c in ("u", "u_mean", "uvel") if c in cols), None)
+        vc = next((cols[c] for c in ("v", "v_mean", "vvel") if c in cols), None)
+        if None in (zc, uc, vc):
+            raise KeyError(f"LADCP columns not recognised: {list(df.columns)} "
+                           "-> edit the names in load_ladcp()")
+        df = df[[zc, uc, vc]].astype(float).dropna()
+        out.append(dict(station=str(s.station), time=pd.Timestamp(s[tcol]), lon=float(s.lon),
+                        lat=float(s.lat), z=np.abs(df[zc].values), u=df[uc].values,
+                        v=df[vc].values))
+    print(f"  LADCP: {len(out)} station(s) in the window: {', '.join(o['station'] for o in out)}")
+    return out
+
+
+def ladcp_on_grid(stations, zgrid):
+    """(n_station, nz) u and v on a common depth grid."""
+    U = np.full((len(stations), len(zgrid)), np.nan)
+    V = np.full_like(U, np.nan)
+    for i, s in enumerate(stations):
+        o = np.argsort(s["z"])
+        U[i] = np.interp(zgrid, s["z"][o], s["u"][o], left=np.nan, right=np.nan)
+        V[i] = np.interp(zgrid, s["z"][o], s["v"][o], left=np.nan, right=np.nan)
+    return U, V
+
+
+def load_track(name):
+    f = next(iter(sorted(DIR_TRACKS.rglob(f"tracked_eddy_{name}.csv"))), None)
+    if f is None:
+        raise FileNotFoundError(f"tracked_eddy_{name}.csv not found under {DIR_TRACKS}")
+    tr = pd.read_csv(f, parse_dates=["date"])
+    return tr, f.parent
+
+
+def center_at(tr, times):
+    """TOEddies center at given times: daily centers at 12:00, running mean, linear interp."""
+    t = tr.date + pd.Timedelta(hours=12)
+    lon = tr.lon.rolling(CENTER_SMOOTH_DAYS, center=True, min_periods=1).mean().values
+    lat = tr.lat.rolling(CENTER_SMOOTH_DAYS, center=True, min_periods=1).mean().values
+    tq = pd.to_datetime(times).values.astype("datetime64[s]").astype(float)
+    tt = t.values.astype("datetime64[s]").astype(float)
+    return np.interp(tq, tt, lon), np.interp(tq, tt, lat)
+
+
+def rmax_at(tr, t0, t1):
+    m = (tr.date >= pd.Timestamp(t0).normalize()) & (tr.date <= pd.Timestamp(t1))
+    return float(tr.loc[m, "r_maxspeed_km"].mean())
+
+
+def eddy_contours(tr, day, eddy_type):
+    """Max-speed and outermost contours of the tracked eddy on that day (lon/lat arrays)."""
+    if gpd is None:
+        return None, None
+    row = tr.iloc[(tr.date - pd.Timestamp(day).normalize()).abs().argmin()]
+    folder = DIR_EDDIES.get(row.source, DIR_EDDIES["TOEDDIES"])
+    kind = "anticyclones" if eddy_type == 1 else "cyclones"
+    d = row.date
+    res = []
+    for part in ("maxspeed", "outcontour"):
+        xy = None
+        for tag in (d.strftime("%Y%m%d"), d.strftime("%Y-%m-%d")):
+            for f in sorted(glob.glob(str(folder / f"*{tag}*{part}*"))):
+                if (kind == "anticyclones") != ("anticyclon" in Path(f).name.lower()):
+                    continue
+                g = gpd.read_file(f).geometry
+                i = int(row.index_in_file)
+                if i < len(g) and g.iloc[i] is not None and not g.iloc[i].is_empty:
+                    geom = g.iloc[i]
+                    if geom.geom_type.startswith("Multi"):
+                        geom = max(geom.geoms, key=lambda q: q.length)
+                    c = geom.exterior.coords if geom.geom_type == "Polygon" else geom.coords
+                    xy = np.asarray(c)[:, :2]
+                break
+            if xy is not None:
+                break
+        res.append(xy)
+    return res
+
+
+def adt_day(day):
+    d = pd.Timestamp(day)
+    tags = (d.strftime("%Y-%m-%d"), d.strftime("%Y%m%d"))
+    f = next((f for f in sorted(glob.glob(str(DIR_SSH / "*.nc")))
+              if any(t in Path(f).name for t in tags)), None)
+    if f is None:
+        return None
+    ds = xr.open_dataset(f)
+    ds = ds.rename({k: v for k, v in {"latitude": "lat", "longitude": "lon"}.items()
+                    if k in ds.variables})
+    a = ds["adt"]
+    if "time" in a.dims:
+        a = a.isel(time=0)
+    return a.load()
+
+
+# =============================================================================
+# Plot helpers
+# =============================================================================
+def vlim_of(*arrs):
+    v = np.concatenate([np.abs(np.asarray(a)).ravel() for a in arrs])
+    v = v[np.isfinite(v)]
+    return max(0.1, np.round(np.nanpercentile(v, 98) * 10) / 10) if v.size else 0.5
+
+
+def draw_section(ax, xg, z, V, vlim, xlabel, title):
+    levels = np.linspace(-vlim, vlim, 21)
+    Vm = np.ma.masked_invalid(V.T)
+    cf = ax.contourf(xg, z, Vm, levels=levels, cmap=CMAP, extend="both")
+    try:
+        cs = ax.contour(xg, z, Vm, levels=np.arange(-2, 2.01, 0.1), colors="k", linewidths=0.4)
+        ax.clabel(cs, fmt="%.1f", fontsize=6)
+    except Exception:
+        pass
+    ax.set_ylim(z.max() if np.isfinite(z.max()) else 1000, 0)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel("Depth (m)")
+    ax.set_title(title, loc="left", fontsize=10)
+    return cf
+
+
+def geo_map(ax, extent, tr, day, eddy_type):
+    ax.set_extent(extent, crs=crs)
+    ax.add_feature(cfeature.LAND, facecolor="0.6", edgecolor="k", zorder=3)
+    gl = ax.gridlines(draw_labels=True, lw=0.3, color="0.5", alpha=0.5)
+    gl.top_labels = gl.right_labels = False
+    gl.xlabel_style = gl.ylabel_style = {"size": 7}
+    a = adt_day(day)
+    if a is not None:
+        a = a.sel(lon=slice(extent[0] - 1, extent[1] + 1), lat=slice(extent[2] - 1, extent[3] + 1))
+        ax.contour(a.lon, a.lat, a, levels=np.arange(-2, 3, 0.05), colors="0.5",
+                   linewidths=0.4, transform=crs, zorder=1)
+    ms, oc = eddy_contours(tr, day, eddy_type)
+    col = "tab:red" if eddy_type == 1 else "tab:blue"
+    if ms is not None:
+        ax.plot(ms[:, 0], ms[:, 1], color=col, lw=1.5, transform=crs, zorder=4)
+    if oc is not None:
+        ax.plot(oc[:, 0], oc[:, 1], color="k", lw=0.8, ls=":", transform=crs, zorder=4)
+
+
+# =============================================================================
+# Section mode
+# =============================================================================
+def run_section(key, sec, cfg, tr, out_dir, instrument):
+    t0, t1 = sec["t0"], sec["t1"]
+    tmid = pd.Timestamp(t0) + (pd.Timestamp(t1) - pd.Timestamp(t0)) / 2
+    clon, clat = center_at(tr, [tmid])
+    clon, clat = float(clon[0]), float(clat[0])
+    rmax = rmax_at(tr, t0, t1)
+
+    # ship track defines the line for both instruments (same line -> comparable figures)
+    sad = sadcp_window(t0, t1)
+    lon0, lat0 = float(np.nanmean(sad.lon)), float(np.nanmean(sad.lat))
+    xs, ys = to_xy(sad.lon.values, sad.lat.values, lon0, lat0)
+    origin, es, en = fit_line(xs, ys)
+    proj_s = lambda x, y: (x - origin[0]) * es[0] + (y - origin[1]) * es[1]
+    proj_n = lambda x, y: (x - origin[0]) * en[0] + (y - origin[1]) * en[1]
+    cx, cy = to_xy(clon, clat, lon0, lat0)
+    s_c, d_c = float(proj_s(cx, cy)), float(proj_n(cx, cy))
+    heading = (np.degrees(np.arctan2(es[0], es[1])) + 360) % 360
+
+    if instrument == "SADCP":
+        s = proj_s(xs, ys)
+        vn = sad.u.values * en[0] + sad.v.values * en[1]
+        edges = np.arange(np.floor(s.min()), np.ceil(s.max()) + DS_KM, DS_KM)
+        xg, V, _ = bin_columns(s, vn, edges)
+        z = sad.z.values
+        pts_lon, pts_lat, labels = sad.lon.values, sad.lat.values, None
+        dist_line = proj_n(xs, ys)
+    else:
+        stations = load_ladcp(t0, t1)
+        if not stations:
+            print(f"  no LADCP station in {key}, skipped")
+            return
+        z = np.arange(0, ZMAX_LADCP + 1, 16.0)
+        U, Vv = ladcp_on_grid(stations, z)
+        lo = np.array([q["lon"] for q in stations])
+        la = np.array([q["lat"] for q in stations])
+        x, y = to_xy(lo, la, lon0, lat0)
+        s = proj_s(x, y)
+        vn = U * en[0] + Vv * en[1]
+        xg = np.arange(np.floor(s.min()) - 2, np.ceil(s.max()) + 2.5, 1.0)
+        V = interp_columns(s, vn, xg, LADCP_MAX_GAP_KM)
+        pts_lon, pts_lat, labels = lo, la, [q["station"] for q in stations]
+        dist_line = proj_n(x, y)
+        keepz = np.isfinite(V).any(0)
+        if keepz.any():
+            z, V = z[: np.where(keepz)[0].max() + 1], V[:, : np.where(keepz)[0].max() + 1]
+
+    vlim = cfg.get("vlim") or vlim_of(V)
+    fig = plt.figure(figsize=(15, 6))
+    gs = GridSpec(1, 2, width_ratios=[1, 2.3], wspace=0.15, figure=fig)
+    axm = fig.add_subplot(gs[0], projection=crs)
+    lon_all = np.r_[sad.lon.values, clon]
+    lat_all = np.r_[sad.lat.values, clat]
+    pad = max(0.5, rmax / 111 * 1.3)
+    extent = [np.nanmin(lon_all) - pad, np.nanmax(lon_all) + pad,
+              np.nanmin(lat_all) - pad, np.nanmax(lat_all) + pad]
+    geo_map(axm, extent, tr, tmid, cfg["eddy_type"])
+    axm.plot(sad.lon, sad.lat, "-", color="0.3", lw=1, transform=crs, zorder=5)
+    axm.scatter(pts_lon, pts_lat, s=8 if labels is None else 30,
+                c="k" if labels is None else "lime", edgecolors="k", lw=0.3,
+                transform=crs, zorder=6, marker="." if labels is None else "^")
+    if labels:
+        for lo_, la_, lab in zip(pts_lon, pts_lat, labels):
+            axm.text(lo_ + 0.03, la_ + 0.03, lab, fontsize=6, transform=crs, zorder=7)
+    # fitted line and direction of positive orthogonal velocity
+    smin, smax = np.nanmin(proj_s(xs, ys)), np.nanmax(proj_s(xs, ys))
+    lx = origin[0] + np.array([smin, smax]) * es[0]
+    ly = origin[1] + np.array([smin, smax]) * es[1]
+    llon = lon0 + np.rad2deg(lx / (R_KM * np.cos(np.deg2rad(lat0))))
+    llat = lat0 + np.rad2deg(ly / R_KM)
+    tf = crs._as_mpl_transform(axm)
+    axm.annotate("", xy=(llon[1], llat[1]), xytext=(llon[0], llat[0]), xycoords=tf,
+                 textcoords=tf, arrowprops=dict(arrowstyle="->", color="m", lw=1.5), zorder=8)
+    mx, my = llon.mean(), llat.mean()
+    nlen = (smax - smin) * 0.15
+    axm.annotate("+v$_\\perp$", xy=(mx + np.rad2deg(en[0] * nlen / (R_KM * np.cos(np.deg2rad(lat0)))),
+                                     my + np.rad2deg(en[1] * nlen / R_KM)),
+                 xytext=(mx, my), xycoords=tf, textcoords=tf,
+                 arrowprops=dict(arrowstyle="->", color="m"), color="m", fontsize=8, zorder=8)
+    axm.plot(clon, clat, "x", color="k", ms=8, mew=2, transform=crs, zorder=9)
+    axm.set_title(f"{cfg['name']} — {key}\nline heading {heading:.0f}°, "
+                  f"center {abs(d_c):.0f} km from line", loc="left", fontsize=9)
+    axm.legend(handles=[
+        mlines.Line2D([], [], color="tab:red" if cfg["eddy_type"] == 1 else "tab:blue",
+                      label=f"Max-speed contour {tmid:%m-%d}"),
+        mlines.Line2D([], [], color="k", ls=":", label="Outermost contour"),
+        mlines.Line2D([], [], color="0.3", label="Ship track"),
+        mlines.Line2D([], [], color="k", marker="x", ls="", label="TOEddies center"),
+        mlines.Line2D([], [], color="m", label="Section axis")], fontsize=6, loc="lower left")
+
+    ax = fig.add_subplot(gs[1])
+    cf = draw_section(ax, xg, z, V, vlim, "Distance along section (km)",
+                      f"{instrument}: velocity orthogonal to the section "
+                      f"(+ to the left of travel, i.e. towards {(heading - 90) % 360:.0f}°)")
+    ax.axvline(s_c, color="k", ls="--", lw=1)
+    ax.text(s_c, 0, " center", va="bottom", fontsize=7)
+    if np.isfinite(rmax) and rmax > abs(d_c):
+        half = np.sqrt(rmax ** 2 - d_c ** 2)
+        for xx in (s_c - half, s_c + half):
+            ax.axvline(xx, color="tab:red" if cfg["eddy_type"] == 1 else "tab:blue", lw=1.5)
+        ax.text(s_c + half, 0, " R$_{max}$", va="bottom", fontsize=7)
+    if labels:
+        for sv, lab in zip(s, labels):
+            ax.annotate(lab, (sv, 0), xytext=(0, 2), textcoords="offset points", fontsize=6,
+                        ha="center", va="bottom", rotation=90, annotation_clip=False)
+            ax.axvline(sv, color="0.3", lw=0.4, ls=":")
+    cb = fig.colorbar(cf, ax=ax, pad=0.01)
+    cb.set_label("v$_\\perp$ (m s$^{-1}$)")
+    fig.text(0.99, 0.01, f"{pd.Timestamp(t0):%Y-%m-%d %H:%M} → {pd.Timestamp(t1):%Y-%m-%d %H:%M}"
+             f" | R$_{{max}}$ (TOEddies) {rmax:.0f} km | samples within "
+             f"{np.nanmax(np.abs(dist_line)):.0f} km of the section axis", ha="right", fontsize=7)
+    out = out_dir / f"{cfg['name']}_{key}_{instrument}_orthogonal_velocity.png"
+    fig.savefig(out, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  saved {out}")
+
+
+# =============================================================================
+# Radial mode
+# =============================================================================
+_FITTED = {}
+
+
+def run_radial(key, sec, cfg, tr, out_dir, instrument):
+    t0, t1 = sec["t0"], sec["t1"]
+    rlim = sec.get("r_limit_km", 200.0)
+    rmax = rmax_at(tr, t0, t1)
+    tmid = pd.Timestamp(t0) + (pd.Timestamp(t1) - pd.Timestamp(t0)) / 2
+
+    def eddy_frame(times, lon, lat):
+        clon, clat = center_at(tr, times)
+        x = np.deg2rad(lon - clon) * R_KM * np.cos(np.deg2rad(clat))
+        y = np.deg2rad(lat - clat) * R_KM
+        return x, y
+
+    # center refinement from SADCP (done once, reused for the LADCP figure)
+    if (cfg["name"], key) not in _FITTED:
+        sad = sadcp_window(t0, t1)
+        x, y = eddy_frame(sad.time.values, sad.lon.values, sad.lat.values)
+        lay = (sad.z >= FIT_LAYER[0]) & (sad.z <= FIT_LAYER[1])
+        ul = sad.u.sel(z=lay).mean("z").values
+        vl = sad.v.sel(z=lay).mean("z").values
+        if FIT_CENTER:
+            dx, dy, cost = fit_center(x, y, ul, vl, r_max=1.5 * rmax)
+            _, vt0, vr0 = polar(x, y, ul, vl)
+            m0 = np.hypot(x, y) <= 1.5 * rmax
+            c0 = np.nansum(vr0[m0] ** 2) / np.nansum(vr0[m0] ** 2 + vt0[m0] ** 2)
+            print(f"  center refined by ({dx:+.0f}, {dy:+.0f}) km east/north of TOEddies; "
+                  f"radial energy fraction {c0:.2f} -> {cost:.2f}")
+        else:
+            dx = dy = 0.0
+        _FITTED[(cfg["name"], key)] = (dx, dy, sad)
+    dx, dy, sad = _FITTED[(cfg["name"], key)]
+
+    if instrument == "SADCP":
+        x, y = eddy_frame(sad.time.values, sad.lon.values, sad.lat.values)
+        x, y = x - dx, y - dy
+        r, vt, _ = polar(x, y, sad.u.values, sad.v.values)
+        edges = np.arange(0, rlim + R_BIN_KM, R_BIN_KM)
+        rg, V, cnt = bin_columns(r, vt, edges, nmin=3)
+        z = sad.z.values
+        labels, ptimes = None, sad.time.values
+    else:
+        stations = load_ladcp(t0, t1)
+        if not stations:
+            print(f"  no LADCP station in {key}, skipped")
+            return
+        z = np.arange(0, ZMAX_LADCP + 1, 16.0)
+        U, Vv = ladcp_on_grid(stations, z)
+        times = np.array([q["time"] for q in stations], "datetime64[ns]")
+        lo = np.array([q["lon"] for q in stations])
+        la = np.array([q["lat"] for q in stations])
+        x, y = eddy_frame(times, lo, la)
+        x, y = x - dx, y - dy
+        r, vt, _ = polar(x, y, U, Vv)
+        rg = np.arange(0, rlim + 1, 2.0)
+        # average stations at nearly the same radius (repeat stations), then interpolate
+        rb, Vb, cnt = bin_columns(r, vt, np.arange(0, rlim + 5.1, 5.0))
+        V = interp_columns(rb[cnt > 0], Vb[cnt > 0], rg, LADCP_MAX_GAP_KM)
+        labels, ptimes = [q["station"] for q in stations], times
+        keepz = np.isfinite(V).any(0)
+        if keepz.any():
+            z, V = z[: np.where(keepz)[0].max() + 1], V[:, : np.where(keepz)[0].max() + 1]
+
+    vlim = cfg.get("vlim") or vlim_of(V)
+    sign = "anticlockwise" if cfg["eddy_type"] == 1 else "clockwise"
+    fig = plt.figure(figsize=(16, 9))
+    gs = GridSpec(2, 2, width_ratios=[1, 2], height_ratios=[1, 1.4], hspace=0.3, wspace=0.18,
+                  figure=fig)
+
+    # (a) coverage in the eddy frame
+    axf = fig.add_subplot(gs[:, 0])
+    tnum = (pd.to_datetime(ptimes) - pd.Timestamp(t0)) / pd.Timedelta(days=1)
+    sc = axf.scatter(x, y, c=tnum, cmap="viridis", s=6 if labels is None else 40,
+                     marker="." if labels is None else "^", edgecolors="none" if labels is None else "k")
+    if labels:
+        for xx, yy, lab in zip(x, y, labels):
+            axf.text(xx + 3, yy + 3, lab, fontsize=6)
+    th = np.linspace(0, 2 * np.pi, 200)
+    col = "tab:red" if cfg["eddy_type"] == 1 else "tab:blue"
+    axf.plot(rmax * np.cos(th), rmax * np.sin(th), color=col, lw=1.5, label=f"R$_{{max}}$ {rmax:.0f} km")
+    for rr in np.arange(50, rlim + 1, 50):
+        axf.plot(rr * np.cos(th), rr * np.sin(th), color="0.7", lw=0.5)
+    axf.plot(0, 0, "+", color="k", ms=12, mew=2, label="refined center")
+    axf.plot(-dx, -dy, "x", color="0.4", ms=8, mew=1.5, label="TOEddies center")
+    axf.set_aspect("equal")
+    axf.set_xlim(-rlim, rlim)
+    axf.set_ylim(-rlim, rlim)
+    axf.set_xlabel("East of eddy center (km)")
+    axf.set_ylabel("North of eddy center (km)")
+    axf.legend(fontsize=7, loc="lower left")
+    axf.set_title(f"(a) {instrument} positions in the eddy frame", loc="left", fontsize=10)
+    cbt = fig.colorbar(sc, ax=axf, orientation="horizontal", pad=0.08, shrink=0.8)
+    cbt.set_label(f"days since {pd.Timestamp(t0):%Y-%m-%d}")
+
+    # (b) v_theta(r) at a few depths
+    axp = fig.add_subplot(gs[0, 1])
+    cmap = plt.get_cmap("viridis")
+    for k, zz in enumerate(PROFILE_DEPTHS):
+        iz = np.argmin(np.abs(z - zz))
+        if abs(z[iz] - zz) > 30:
+            continue
+        axp.plot(rg, V[:, iz], "-o", ms=2.5, lw=1.2, color=cmap(k / max(1, len(PROFILE_DEPTHS) - 1)),
+                 label=f"{z[iz]:.0f} m")
+    axp.axhline(0, color="k", lw=0.6)
+    axp.axvline(rmax, color=col, lw=1.2)
+    axp.set_xlim(0, rlim)
+    axp.set_ylabel("v$_\\theta$ (m s$^{-1}$)")
+    axp.legend(fontsize=7, ncol=len(PROFILE_DEPTHS))
+    axp.grid(alpha=0.3)
+    axp.set_title(f"(b) Azimuthal velocity vs radius (+ anticlockwise; this eddy turns {sign})",
+                  loc="left", fontsize=10)
+
+    # (c) v_theta(r, z)
+    ax = fig.add_subplot(gs[1, 1], sharex=axp)
+    cf = draw_section(ax, rg, z, V, vlim, "Distance to eddy center (km)",
+                      f"(c) {instrument}: velocity orthogonal to the radius, v$_\\theta$(r, z)")
+    ax.axvline(rmax, color=col, lw=1.5)
+    if labels:
+        for rv, lab in zip(r, labels):
+            ax.annotate(lab, (rv, 0), xytext=(0, 2), textcoords="offset points", fontsize=6,
+                        ha="center", va="bottom", rotation=90, annotation_clip=False)
+            ax.axvline(rv, color="0.3", lw=0.4, ls=":")
+    cb = fig.colorbar(cf, ax=ax, pad=0.01)
+    cb.set_label("v$_\\theta$ (m s$^{-1}$)")
+    fig.suptitle(f"{cfg['name']} — {key}: {pd.Timestamp(t0):%Y-%m-%d} → {pd.Timestamp(t1):%Y-%m-%d}, "
+                 f"eddy frame (TOEddies center smoothed over {CENTER_SMOOTH_DAYS} d, "
+                 f"refined by ({dx:+.0f}, {dy:+.0f}) km)", fontsize=11)
+    out = out_dir / f"{cfg['name']}_{key}_{instrument}_orthogonal_velocity.png"
+    fig.savefig(out, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  saved {out}")
+
+
+# =============================================================================
+def main(which):
+    for key in which:
+        cfg = EDDIES[key]
+        tr, out_dir = load_track(cfg["name"])
+        print(f"\n=== {key} ({cfg['name']}) -> {out_dir}")
+        for skey, sec in cfg["sections"].items():
+            print(f"-- {skey}: {sec['mode']} {sec['t0']} -> {sec['t1']}")
+            run = run_section if sec["mode"] == "section" else run_radial
+            for instrument in ("SADCP", "LADCP"):
+                try:
+                    run(skey, sec, cfg, tr, out_dir, instrument)
+                except Exception:
+                    import traceback
+                    print(f"  ! {instrument} figure for {skey} failed:")
+                    traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:] or list(EDDIES))
