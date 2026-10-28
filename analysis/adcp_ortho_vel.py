@@ -675,7 +675,7 @@ def run_radial(key, sec, cfg, tr, out_dir, instrument):
     axp.set_ylabel("v$_\\theta$ (m s$^{-1}$)")
     axp.legend(fontsize=7, ncol=len(PROFILE_DEPTHS))
     axp.grid(alpha=0.3)
-    axp.set_title(f"(b) Azimuthal velocity vs radius (+ anticlockwise; this eddy turns {sign})",
+    axp.set_title(f"(b) Azimuthal velocity vs radius",
                   loc="left", fontsize=10)
 
     # (c) v_theta(r, z)
