@@ -26,6 +26,7 @@ from pyproj import Geod
 import numpy as np
 import matplotlib.lines as mlines
 from matplotlib.patches import FancyArrowPatch
+
 def dm_to_dd(degrees, minutes, flag=False):
     dd = degrees + (minutes / 60)
     if flag:
@@ -390,6 +391,7 @@ def plot_adcp_section(curr_day, adcp_mag, x_dist, title, vmin, vmax, cmap="virid
         plt.savefig(savefig)
 
     return fig, ax
+
 def setup_map(ax, extent, title, crs, ft):
     """Apply common formatting to Cartopy maps."""
 
