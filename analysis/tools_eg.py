@@ -53,7 +53,8 @@ NEN_MIN_FRAC = 0.5           # skip depth levels with fewer valid fixes than thi
 NEN_LAYER = (30.0, 200.0)    # m: layer for the single robust center (map + print)
 CENTER_BY_DEPTH = True       # True: green line = center at every depth; False: layer center only
 SECTION_X_FROM = "start" # m: layer for the single robust center (map + print)
- 
+CRUISE_START = "2026-05-14"
+CRUISE_END   = "2026-07-27"
  
 ###### PATHS ######
 BASE = Path("/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS")
