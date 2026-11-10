@@ -1,0 +1,2 @@
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ar qc libgpc_f.a CMakeFiles/gpc_f.dir/gpc_polygon_clip_f.f90.o CMakeFiles/gpc_f.dir/shpobj2pol.f90.o CMakeFiles/gpc_f.dir/gpc_f.f90.o CMakeFiles/gpc_f.dir/shp_read_pol.f90.o
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ranlib libgpc_f.a

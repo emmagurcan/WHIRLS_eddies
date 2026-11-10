@@ -1,0 +1,28 @@
+# The fortran modules provided by this target.
+provides
+ ccw_orient_m.mod
+ complete_ssh_m.mod
+ config_m.mod
+ cont_list_m.mod
+ derived_types.mod
+ detection_eddies_version_m.mod
+ get_1_outerm_m.mod
+ get_var_m.mod
+ good_contour_m.mod
+ input_ssh_m.mod
+ invert_proj_m.mod
+ local_extrema_m.mod
+ locate_min_area_m.mod
+ mean_speed_m.mod
+ nearby_extr_m.mod
+ ori_slice_open_m.mod
+ read_field_indices_m.mod
+ read_grid_inst_eddies_m.mod
+ set_all_extr_m.mod
+ set_contours_m.mod
+ set_max_speed_m.mod
+ shpc_close_m.mod
+ spher_polyline_area_m.mod
+ write_cont_list_m.mod
+ write_eddy_m.mod
+ write_snapshot_m.mod

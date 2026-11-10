@@ -1,0 +1,2 @@
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ar qc libezmpi.a CMakeFiles/ezmpi.dir/ezmpi.f90.o CMakeFiles/ezmpi.dir/ezmpi_recv.f90.o CMakeFiles/ezmpi.dir/ezmpi_ssend.f90.o CMakeFiles/ezmpi.dir/ezmpi_send.f90.o CMakeFiles/ezmpi.dir/ezmpi_bcast.f90.o
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ranlib libezmpi.a

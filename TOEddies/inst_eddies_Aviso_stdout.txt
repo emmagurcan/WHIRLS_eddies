@@ -1,0 +1,6 @@
+Enter the namelists `config_nml`, `input_ssh_nml` and `read_grid_inst_eddies_nml`, followed by CTRL-D:
+inst_eddies.loop_inst_eddies: Date: 27849
+inst_eddies.loop_inst_eddies: Input file: /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/data/SSH/april_nov/20260401_cmems_data.nc
+ inst_eddies: Enter main_nml:
+ config: Enter config_nml:
+ input_ssh: Enter input_ssh_nml:

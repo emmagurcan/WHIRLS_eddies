@@ -1,0 +1,22 @@
+# The fortran modules provided by this target.
+provides
+ candidate_overlap_m.mod
+ config_graph_m.mod
+ copy_shift_m.mod
+ derived_types.mod
+ detection_eddies_version_m.mod
+ dispatch_snapshot_m.mod
+ get_snapshot_m.mod
+ inters_lines_m.mod
+ ori_slice_open_m.mod
+ overlap_m.mod
+ read_eddy_m.mod
+ read_field_indices_m.mod
+ read_grid_m.mod
+ read_snapshot_m.mod
+ recv_snapshot_m.mod
+ send_snapshot_m.mod
+ shpc_close_m.mod
+ spher_polygon_area_m.mod
+ spher_polyline_area_m.mod
+ unit_edge_m.mod

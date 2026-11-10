@@ -1,0 +1,25 @@
+
+At point "end loading" :
+	Maximum resident set size of the process: 83776 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 0 s
+
+At point "end grouping" :
+	Maximum resident set size of the process: 106688 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 0 s
+
+At point "end removing vertices" :
+	Maximum resident set size of the process: 133616 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 0 s
+
+At point "end deleting properties" :
+	Maximum resident set size of the process: 133616 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 0 s
+
+At point "end saving" :
+	Maximum resident set size of the process: 133808 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 0 s

@@ -1,0 +1,14 @@
+# The fortran modules provided by this target.
+provides
+ contour_531.mod
+ convert_to_ind_m.mod
+ convert_to_irreg_coord_m.mod
+ convert_to_reg_coord_m.mod
+ draw_to_scratch_m.mod
+ find_contours_irreg_grid_m.mod
+ find_contours_no_coord_m.mod
+ find_contours_reg_grid_m.mod
+ gcontr_m.mod
+ iget_m.mod
+ mark1_m.mod
+ polyline_m.mod

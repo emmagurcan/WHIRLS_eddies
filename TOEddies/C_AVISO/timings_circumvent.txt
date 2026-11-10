@@ -1,0 +1,15 @@
+
+At point "end loading" :
+	Maximum resident set size of the process: 69936 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 0 s
+
+At point "end circumventing nodes" :
+	Maximum resident set size of the process: 84736 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 8 s
+
+At point "end saving" :
+	Maximum resident set size of the process: 87168 MiB
+	Maximum resident set size of largest child: 0 MiB
+	Elapsed since previous point: 0 s

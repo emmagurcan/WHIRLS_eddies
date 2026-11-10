@@ -1,0 +1,3 @@
+&config_nml min_amp = 0.001, max_radius = 40, 40, min_radius = 25./
+&input_ssh_nml nc_time = 1, ssh_varname = "adt", u_varname = "ugos", v_varname = "vgos"/
+&read_grid_inst_eddies_nml periodic = f, uniform_lon_lat = t stag_u = 0, 0, stag_v = 0, 0/

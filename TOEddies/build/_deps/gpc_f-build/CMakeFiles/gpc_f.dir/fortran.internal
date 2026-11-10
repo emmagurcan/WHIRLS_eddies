@@ -1,0 +1,6 @@
+# The fortran modules provided by this target.
+provides
+ gpc_f.mod
+ gpc_polygon_clip_f_m.mod
+ shp_read_pol_m.mod
+ shpobj2pol_m.mod

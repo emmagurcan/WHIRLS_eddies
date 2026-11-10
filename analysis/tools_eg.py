@@ -22,6 +22,7 @@ from pyproj import Geod
 import warnings
 import cmocean
 from matplotlib.path import Path as MplPath
+import re
  
 ###### CONSTANTS ######
 SADCP_AVG = "10min"          # SADCP time averaging (~3 km at 10 kn)
@@ -791,7 +792,62 @@ def load_satellite(adt_path):
         "ugos": np.squeeze(ds.ugos),
         "vgos": np.squeeze(ds.vgos)
     }
- 
+def date_from_name_cmems(f):
+    m = re.search(r"(\d{4})-?(\d{2})-?(\d{2})", Path(f).name)
+    return pd.Timestamp(f"{m.group(1)}-{m.group(2)}-{m.group(3)}")
+
+def load_adt_cmems(dir_ssh, t0, t1, bbox=None, pad_days=1):
+    files = sorted(os.listdir(DIR_SSH))
+
+    # Select cruise dates
+    days = pd.date_range(pd.Timestamp(t0) - pd.Timedelta(days=1),
+                            pd.Timestamp(t1) + pd.Timedelta(days=1), freq="D")
+    tags = {d.strftime("%Y-%m-%d") for d in days} | {d.strftime("%Y%m%d") for d in days}
+    picked = [f for f in files if any(t in Path(f).name for t in tags)] or files
+    dsets = []
+    for f in picked:
+        d = xr.open_dataset(dir_ssh / f)
+
+        # fix the time for the daily files 
+        if d.sizes.get("time", 1) == 1:
+            if "time" in d.dims:
+                d = d.isel(time=0, drop=True)
+            elif "time" in d.coords:
+                d = d.drop_vars("time")
+            d = d.expand_dims(time=[date_from_name_cmems(f)])
+
+        # load and close 
+        dsets.append(d.load())
+        d.close()
+
+    # combine into 1 dataset along time axis
+    ds = xr.concat(dsets, "time")
+    ds = ds.assign_coords(time=np.asarray(ds.time.values, dtype="datetime64[ns]")).sortby("time")
+    ds = ds.isel(time=~pd.Index(ds.time.values).duplicated())
+    ds = ds.assign_coords(longitude=xr.where(ds.longitude > 180, ds.longitude - 360, ds.longitude)).sortby(["latitude", "longitude"])
+    if bbox is not None:
+        x0, x1, y0, y1 = bbox
+        ds = ds.sel(longitude=slice(x0, x1), latitude=slice(y0, y1))
+    return ds.sel(time=slice(days[0], days[-1] + pd.Timedelta(hours=23)))
+ds_cmems = load_adt_cmems(DIR_SSH, CRUISE_START, CRUISE_END,bbox=extent)
+
+
+###### HYDROGRAPHY FUNCTIONS ######
+def determine_sigma(S, T, press, lon, lat):
+    # Convert practical salinity to absolute salinity
+    SA = gsw.SA_from_SP(S, press, lon, lat)  # Longitude and Latitude needed
+
+    # Convert in situ temperature to conservative temperature
+    CT = gsw.CT_from_t(SA, T, press)
+
+    # Calculate in situ density (kg/m³)
+    rho = gsw.rho(SA, CT, press)
+
+    # Calculate potential density anomaly referenced to 0 dbar
+    sigma0 = gsw.sigma0(SA, CT)  # Potential density anomaly (kg/m³ - 1000)
+
+    return sigma0
+
 ###### PLOTTING FUNCTIONS ######
 def setup_map(ax, extent, title, crs, ft):
     """Apply common formatting to Cartopy maps."""
@@ -1048,7 +1104,7 @@ def mark_eddies_on_sections(axs, sec, z, a_lon, a_lat, u, v, edds, min_fixes=5):
  
 def plot_section_with_map(sec, adcp, map_draw=None, map_args=None, title="", pmax=None, sig_levels=None,
                           map_extent=None, map_pad=(2.5, 2.0), vel_lim=None, edd=None, savepath=None,
-                          flip_x=True):
+                          flip_x=True, woa_lon=None, woa_lat=None):
     """
     Layout: 2 x 2 sections on the left
                 (a) Theta        (b) S_A
@@ -1198,6 +1254,14 @@ def plot_section_with_map(sec, adcp, map_draw=None, map_args=None, title="", pma
  
     halo = [pe.Stroke(linewidth=4.5, foreground="white"), pe.Normal()]
     axm.plot(lon, lat, "-", color="k", lw=2, path_effects=halo, zorder=100, **tr)
+    if woa_lon is not None and len(woa_lon):
+        axm.scatter(woa_lon, woa_lat, s=6, color="orange", edgecolor="k", linewidth=0.2,
+                    zorder=101, label=f"WOA grid points ({len(woa_lon)})", **tr)
+    h, l = axm.get_legend_handles_labels()
+    leg = axm.get_legend()
+    if leg is not None:
+        axm.legend(handles=leg.legend_handles + h, fontsize=8, loc="lower left",
+                       framealpha=0.9).set_zorder(200)
     for i, lab in [(0, "0 km"), (-1, f"{xkm[-1]:.0f} km")]:
         axm.plot(lon[i], lat[i], marker="o" if i == 0 else "s", ms=6, mfc="yellow",
                  mec="k", mew=1, zorder=102, **tr)

@@ -1,0 +1,17 @@
+# The fortran modules provided by this target.
+provides
+ config_graph_m.mod
+ derived_types.mod
+ ori_slice_open_m.mod
+ read_eddy_m.mod
+ read_field_indices_m.mod
+ read_grid_m.mod
+ read_snapshot_m.mod
+ recv_snapshot_m.mod
+ save_snapshot_m.mod
+ send_snapshot_m.mod
+ shpc_close_m.mod
+ shpc_create_m.mod
+ write_eddy_m.mod
+ write_extr_map_m.mod
+ write_snapshot_m.mod

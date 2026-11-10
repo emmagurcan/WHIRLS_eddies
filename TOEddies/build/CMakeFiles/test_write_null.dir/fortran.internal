@@ -1,0 +1,7 @@
+# The fortran modules provided by this target.
+provides
+ derived_types.mod
+ ori_slice_open_m.mod
+ read_field_indices_m.mod
+ shpc_close_m.mod
+ shpc_create_m.mod

@@ -1,0 +1,7 @@
+# The fortran modules provided by this target.
+provides
+ ezmpi.mod
+ ezmpi_bcast_m.mod
+ ezmpi_recv_m.mod
+ ezmpi_send_m.mod
+ ezmpi_ssend_m.mod

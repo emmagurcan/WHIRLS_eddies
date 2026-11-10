@@ -1,0 +1,2 @@
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ar qc libfortranc.a CMakeFiles/fortranc.dir/fortranc.F90.o
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ranlib libfortranc.a

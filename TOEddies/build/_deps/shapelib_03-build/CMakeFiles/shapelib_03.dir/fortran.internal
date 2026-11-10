@@ -1,0 +1,15 @@
+# The fortran modules provided by this target.
+provides
+ dbf_add_field_03_m.mod
+ dbf_get_field_index_03_m.mod
+ dbf_read_attribute_03_m.mod
+ dbf_write_attribute_03_m.mod
+ shapelib_03.mod
+ shp_append_null_03_m.mod
+ shp_append_object_03_m.mod
+ shp_append_point_03_m.mod
+ shp_create_03_m.mod
+ shp_get_info_03_m.mod
+ shp_open_03_m.mod
+ shp_read_object_03_m.mod
+ shp_read_point_m.mod

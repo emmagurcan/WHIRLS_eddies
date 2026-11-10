@@ -1,0 +1,2 @@
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ar qc libfortranGIS.a CMakeFiles/fortranGIS.dir/shapelib.F90.o CMakeFiles/fortranGIS.dir/shapelibint.c.o
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ranlib libfortranGIS.a

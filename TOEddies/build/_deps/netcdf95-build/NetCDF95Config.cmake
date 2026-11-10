@@ -1,0 +1,5 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+include(CMakeFindDependencyMacro)
+find_dependency(NetCDF_Fortran)
+find_dependency(netCDF)
+include("${CMAKE_CURRENT_LIST_DIR}/NetCDF95Targets.cmake")

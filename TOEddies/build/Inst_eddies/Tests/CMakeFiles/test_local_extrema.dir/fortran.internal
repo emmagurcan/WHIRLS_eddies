@@ -1,0 +1,8 @@
+# The fortran modules provided by this target.
+provides
+ config_m.mod
+ get_var_m.mod
+ input_ssh_m.mod
+ local_extrema_m.mod
+ read_grid_inst_eddies_m.mod
+ write_extr_map_m.mod

@@ -1,0 +1,4 @@
+# The fortran modules provided by this target.
+provides
+ spher_polygon_area_m.mod
+ spher_polyline_area_m.mod

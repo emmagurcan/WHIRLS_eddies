@@ -1,0 +1,8 @@
+# The fortran modules provided by this target.
+provides
+ config_m.mod
+ get_1_outerm_m.mod
+ get_var_m.mod
+ good_contour_m.mod
+ input_ssh_m.mod
+ read_grid_inst_eddies_m.mod

@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/CMakeFiles/netcdf95-populate"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/CMakeFiles/netcdf95-populate.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/CMakeFiles/netcdf95-populate-complete.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-build.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-configure.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-download.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-install.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-mkdir.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-patch.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-test.rule"
+		},
+		{
+			"file" : "/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/_deps/netcdf95-subbuild/netcdf95-populate-prefix/src/netcdf95-populate-stamp/netcdf95-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"netcdf95-populate"
+		],
+		"name" : "netcdf95-populate"
+	}
+}

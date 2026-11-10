@@ -1,0 +1,2 @@
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ar qc libGPC.a CMakeFiles/GPC.dir/gpc.c.o
+/Users/emmagurcan/miniforge3/envs/toeddies_pkgs/bin/arm64-apple-darwin20.0.0-ranlib libGPC.a

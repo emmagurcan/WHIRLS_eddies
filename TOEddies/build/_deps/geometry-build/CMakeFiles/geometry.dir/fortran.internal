@@ -1,0 +1,11 @@
+# The fortran modules provided by this target.
+provides
+ circle_sector_area_2d_m.mod
+ geometry.mod
+ i4_modp_m.mod
+ i4_wrap_m.mod
+ i4vec_lcm_m.mod
+ polygon_area_2d_m.mod
+ polygon_contains_point_m.mod
+ polygon_point_dist_2d_m.mod
+ segment_point_dist_2d_m.mod

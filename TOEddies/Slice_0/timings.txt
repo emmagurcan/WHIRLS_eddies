@@ -1,0 +1,669 @@
+ CPU time for preamble, before computation:   1.52800009E-02 s
+ CPU time for computation, before output:   3.97153592     s
+ CPU time for output:   1.70392990E-02 s
+ CPU time for preamble, before computation:   8.28799978E-03 s
+ CPU time for computation, before output:   3.92399406     s
+ CPU time for output:   2.15258598E-02 s
+ CPU time for preamble, before computation:   7.89699890E-03 s
+ CPU time for computation, before output:   3.99896717     s
+ CPU time for output:   1.79018974E-02 s
+ CPU time for preamble, before computation:   8.93400051E-03 s
+ CPU time for computation, before output:   4.02783394     s
+ CPU time for output:   1.90482140E-02 s
+ CPU time for preamble, before computation:   7.68399984E-03 s
+ CPU time for computation, before output:   4.16702700     s
+ CPU time for output:   2.17943192E-02 s
+ CPU time for preamble, before computation:   8.98599997E-03 s
+ CPU time for computation, before output:   4.06837893     s
+ CPU time for output:   1.74183846E-02 s
+ CPU time for preamble, before computation:   7.95199908E-03 s
+ CPU time for computation, before output:   4.19693089     s
+ CPU time for output:   1.83029175E-02 s
+ CPU time for preamble, before computation:   8.36299919E-03 s
+ CPU time for computation, before output:   4.29763079     s
+ CPU time for output:   1.73201561E-02 s
+ CPU time for preamble, before computation:   7.51900114E-03 s
+ CPU time for computation, before output:   4.23191786     s
+ CPU time for output:   1.77040100E-02 s
+ CPU time for preamble, before computation:   7.90599920E-03 s
+ CPU time for computation, before output:   4.25842476     s
+ CPU time for output:   1.93839073E-02 s
+ CPU time for preamble, before computation:   7.99799897E-03 s
+ CPU time for computation, before output:   4.20531178     s
+ CPU time for output:   1.78918839E-02 s
+ CPU time for preamble, before computation:   7.92199932E-03 s
+ CPU time for computation, before output:   4.18848276     s
+ CPU time for output:   1.82981491E-02 s
+ CPU time for preamble, before computation:   8.09100084E-03 s
+ CPU time for computation, before output:   4.16150999     s
+ CPU time for output:   1.83658600E-02 s
+ CPU time for preamble, before computation:   7.89799914E-03 s
+ CPU time for computation, before output:   4.25251675     s
+ CPU time for output:   1.86080933E-02 s
+ CPU time for preamble, before computation:   8.00799951E-03 s
+ CPU time for computation, before output:   4.12915707     s
+ CPU time for output:   1.99642181E-02 s
+ CPU time for preamble, before computation:   7.70800002E-03 s
+ CPU time for computation, before output:   4.15792418     s
+ CPU time for output:   2.43620872E-02 s
+ CPU time for preamble, before computation:   7.63799995E-03 s
+ CPU time for computation, before output:   4.14678621     s
+ CPU time for output:   1.93591118E-02 s
+ CPU time for preamble, before computation:   7.52899982E-03 s
+ CPU time for computation, before output:   4.14402199     s
+ CPU time for output:   1.95131302E-02 s
+ CPU time for preamble, before computation:   7.72099942E-03 s
+ CPU time for computation, before output:   4.19560099     s
+ CPU time for output:   2.16689110E-02 s
+ CPU time for preamble, before computation:   8.41199979E-03 s
+ CPU time for computation, before output:   4.09479761     s
+ CPU time for output:   1.95813179E-02 s
+ CPU time for preamble, before computation:   7.76899979E-03 s
+ CPU time for computation, before output:   4.06010914     s
+ CPU time for output:   1.98469162E-02 s
+ CPU time for preamble, before computation:   7.92600028E-03 s
+ CPU time for computation, before output:   4.07085514     s
+ CPU time for output:   1.93462372E-02 s
+ CPU time for preamble, before computation:   7.74599984E-03 s
+ CPU time for computation, before output:   4.03471184     s
+ CPU time for output:   2.22601891E-02 s
+ CPU time for preamble, before computation:   7.72499852E-03 s
+ CPU time for computation, before output:   3.99135804     s
+ CPU time for output:   2.11968422E-02 s
+ CPU time for preamble, before computation:   7.51399994E-03 s
+ CPU time for computation, before output:   3.95240307     s
+ CPU time for output:   1.98791027E-02 s
+ CPU time for preamble, before computation:   7.70900026E-03 s
+ CPU time for computation, before output:   3.92266393     s
+ CPU time for output:   2.23820210E-02 s
+ CPU time for preamble, before computation:   7.96900131E-03 s
+ CPU time for computation, before output:   3.94748092     s
+ CPU time for output:   3.37579250E-02 s
+ CPU time for preamble, before computation:   7.69199990E-03 s
+ CPU time for computation, before output:   3.92465091     s
+ CPU time for output:   3.37281227E-02 s
+ CPU time for preamble, before computation:   7.53900036E-03 s
+ CPU time for computation, before output:   3.97957397     s
+ CPU time for output:   2.17628479E-02 s
+ CPU time for preamble, before computation:   8.25499929E-03 s
+ CPU time for computation, before output:   3.94947195     s
+ CPU time for output:   2.18107700E-02 s
+ CPU time for preamble, before computation:   7.56100006E-03 s
+ CPU time for computation, before output:   3.95738006     s
+ CPU time for output:   2.26328373E-02 s
+ CPU time for preamble, before computation:   7.53000006E-03 s
+ CPU time for computation, before output:   3.98527288     s
+ CPU time for output:   2.72250175E-02 s
+ CPU time for preamble, before computation:   8.60900059E-03 s
+ CPU time for computation, before output:   4.00395489     s
+ CPU time for output:   2.23121643E-02 s
+ CPU time for preamble, before computation:   8.14300030E-03 s
+ CPU time for computation, before output:   3.97549629     s
+ CPU time for output:   2.06737518E-02 s
+ CPU time for preamble, before computation:   8.06999952E-03 s
+ CPU time for computation, before output:   3.98240900     s
+ CPU time for output:   2.31370926E-02 s
+ CPU time for preamble, before computation:   8.19899887E-03 s
+ CPU time for computation, before output:   4.12124825     s
+ CPU time for output:   2.23188400E-02 s
+ CPU time for preamble, before computation:   7.87200034E-03 s
+ CPU time for computation, before output:   4.12474108     s
+ CPU time for output:   2.15497017E-02 s
+ CPU time for preamble, before computation:   8.15199874E-03 s
+ CPU time for computation, before output:   4.14209986     s
+ CPU time for output:   2.22249031E-02 s
+ CPU time for preamble, before computation:   8.00000131E-03 s
+ CPU time for computation, before output:   4.13400698     s
+ CPU time for output:   2.14462280E-02 s
+ CPU time for preamble, before computation:   7.63599947E-03 s
+ CPU time for computation, before output:   4.10979605     s
+ CPU time for output:   2.29482651E-02 s
+ CPU time for preamble, before computation:   7.98800029E-03 s
+ CPU time for computation, before output:   4.07974100     s
+ CPU time for output:   2.19116211E-02 s
+ CPU time for preamble, before computation:   8.24099779E-03 s
+ CPU time for computation, before output:   4.02513504     s
+ CPU time for output:   2.48012543E-02 s
+ CPU time for preamble, before computation:   7.49700144E-03 s
+ CPU time for computation, before output:   3.99548221     s
+ CPU time for output:   2.41980553E-02 s
+ CPU time for preamble, before computation:   8.06099921E-03 s
+ CPU time for computation, before output:   3.94601202     s
+ CPU time for output:   2.66618729E-02 s
+ CPU time for preamble, before computation:   7.81499967E-03 s
+ CPU time for computation, before output:   3.94684792     s
+ CPU time for output:   2.24680901E-02 s
+ CPU time for preamble, before computation:   7.60900043E-03 s
+ CPU time for computation, before output:   3.92354012     s
+ CPU time for output:   2.17959881E-02 s
+ CPU time for preamble, before computation:   8.17500055E-03 s
+ CPU time for computation, before output:   3.89911413     s
+ CPU time for output:   2.41549015E-02 s
+ CPU time for preamble, before computation:   8.03999975E-03 s
+ CPU time for computation, before output:   3.90878797     s
+ CPU time for output:   2.39379406E-02 s
+ CPU time for preamble, before computation:   7.65799917E-03 s
+ CPU time for computation, before output:   3.96977901     s
+ CPU time for output:   2.41699219E-02 s
+ CPU time for preamble, before computation:   9.36199911E-03 s
+ CPU time for computation, before output:   3.98851919     s
+ CPU time for output:   2.48661041E-02 s
+ CPU time for preamble, before computation:   8.36199895E-03 s
+ CPU time for computation, before output:   4.07039785     s
+ CPU time for output:   2.32739449E-02 s
+ CPU time for preamble, before computation:   7.34299980E-03 s
+ CPU time for computation, before output:   4.03828382     s
+ CPU time for output:   2.32563019E-02 s
+ CPU time for preamble, before computation:   7.90399872E-03 s
+ CPU time for computation, before output:   4.06431675     s
+ CPU time for output:   2.90250778E-02 s
+ CPU time for preamble, before computation:   8.35400075E-03 s
+ CPU time for computation, before output:   4.10831976     s
+ CPU time for output:   2.19602585E-02 s
+ CPU time for preamble, before computation:   7.88100064E-03 s
+ CPU time for computation, before output:   4.09451675     s
+ CPU time for output:   2.36921310E-02 s
+ CPU time for preamble, before computation:   7.99899921E-03 s
+ CPU time for computation, before output:   4.08136082     s
+ CPU time for output:   2.25982666E-02 s
+ CPU time for preamble, before computation:   8.32999870E-03 s
+ CPU time for computation, before output:   4.06592417     s
+ CPU time for output:   2.37030983E-02 s
+ CPU time for preamble, before computation:   7.91699998E-03 s
+ CPU time for computation, before output:   4.03172779     s
+ CPU time for output:   2.71830559E-02 s
+ CPU time for preamble, before computation:   8.51299986E-03 s
+ CPU time for computation, before output:   3.98064709     s
+ CPU time for output:   2.28548050E-02 s
+ CPU time for preamble, before computation:   8.40799883E-03 s
+ CPU time for computation, before output:   4.06365156     s
+ CPU time for output:   2.46434212E-02 s
+ CPU time for preamble, before computation:   8.22199881E-03 s
+ CPU time for computation, before output:   4.15841722     s
+ CPU time for output:   2.30150223E-02 s
+ CPU time for preamble, before computation:   8.09800066E-03 s
+ CPU time for computation, before output:   4.03400803     s
+ CPU time for output:   2.26979256E-02 s
+ CPU time for preamble, before computation:   7.79699907E-03 s
+ CPU time for computation, before output:   4.17038631     s
+ CPU time for output:   2.60996819E-02 s
+ CPU time for preamble, before computation:   7.83699937E-03 s
+ CPU time for computation, before output:   4.13582897     s
+ CPU time for output:   2.38409042E-02 s
+ CPU time for preamble, before computation:   8.68400000E-03 s
+ CPU time for computation, before output:   4.08236885     s
+ CPU time for output:   2.43983269E-02 s
+ CPU time for preamble, before computation:   7.65700080E-03 s
+ CPU time for computation, before output:   4.09832478     s
+ CPU time for output:   2.54130363E-02 s
+ CPU time for preamble, before computation:   8.07300024E-03 s
+ CPU time for computation, before output:   4.12684631     s
+ CPU time for output:   2.33807564E-02 s
+ CPU time for preamble, before computation:   7.88899884E-03 s
+ CPU time for computation, before output:   4.04868221     s
+ CPU time for output:   2.51841545E-02 s
+ CPU time for preamble, before computation:   7.87400082E-03 s
+ CPU time for computation, before output:   4.06269503     s
+ CPU time for output:   2.62112617E-02 s
+ CPU time for preamble, before computation:   7.49100000E-03 s
+ CPU time for computation, before output:   4.06872892     s
+ CPU time for output:   2.41422653E-02 s
+ CPU time for preamble, before computation:   7.90599920E-03 s
+ CPU time for computation, before output:   4.04414511     s
+ CPU time for output:   2.42347717E-02 s
+ CPU time for preamble, before computation:   7.56299868E-03 s
+ CPU time for computation, before output:   4.03212309     s
+ CPU time for output:   2.51097679E-02 s
+ CPU time for preamble, before computation:   7.94400088E-03 s
+ CPU time for computation, before output:   4.11008596     s
+ CPU time for output:   2.41379738E-02 s
+ CPU time for preamble, before computation:   1.18379984E-02 s
+ CPU time for computation, before output:   4.07778406     s
+ CPU time for output:   2.54392624E-02 s
+ CPU time for preamble, before computation:   7.90300034E-03 s
+ CPU time for computation, before output:   4.04929590     s
+ CPU time for output:   2.55341530E-02 s
+ CPU time for preamble, before computation:   8.22999887E-03 s
+ CPU time for computation, before output:   4.02051020     s
+ CPU time for output:   2.56390572E-02 s
+ CPU time for preamble, before computation:   9.21799988E-03 s
+ CPU time for computation, before output:   3.99232316     s
+ CPU time for output:   2.70390511E-02 s
+ CPU time for preamble, before computation:   8.25599954E-03 s
+ CPU time for computation, before output:   3.97900200     s
+ CPU time for output:   4.62088585E-02 s
+ CPU time for preamble, before computation:   8.90100002E-03 s
+ CPU time for computation, before output:   4.00952816     s
+ CPU time for output:   2.55150795E-02 s
+ CPU time for preamble, before computation:   7.94200040E-03 s
+ CPU time for computation, before output:   4.08561707     s
+ CPU time for output:   2.53920555E-02 s
+ CPU time for preamble, before computation:   8.12999904E-03 s
+ CPU time for computation, before output:   4.23770809     s
+ CPU time for output:   2.47449875E-02 s
+ CPU time for preamble, before computation:   8.29800032E-03 s
+ CPU time for computation, before output:   4.18518019     s
+ CPU time for output:   2.61340141E-02 s
+ CPU time for preamble, before computation:   8.55999999E-03 s
+ CPU time for computation, before output:   4.12993383     s
+ CPU time for output:   2.74353027E-02 s
+ CPU time for preamble, before computation:   8.73499922E-03 s
+ CPU time for computation, before output:   4.15618992     s
+ CPU time for output:   2.81701088E-02 s
+ CPU time for preamble, before computation:   8.45099986E-03 s
+ CPU time for computation, before output:   4.07036400     s
+ CPU time for output:   2.73933411E-02 s
+ CPU time for preamble, before computation:   9.75899957E-03 s
+ CPU time for computation, before output:   4.18610001     s
+ CPU time for output:   2.59227753E-02 s
+ CPU time for preamble, before computation:   8.03000107E-03 s
+ CPU time for computation, before output:   4.10103273     s
+ CPU time for output:   2.70099640E-02 s
+ CPU time for preamble, before computation:   8.57500173E-03 s
+ CPU time for computation, before output:   4.14352798     s
+ CPU time for output:   2.68130302E-02 s
+ CPU time for preamble, before computation:   8.10999982E-03 s
+ CPU time for computation, before output:   4.12540388     s
+ CPU time for output:   3.11007500E-02 s
+ CPU time for preamble, before computation:   8.40999931E-03 s
+ CPU time for computation, before output:   4.19330072     s
+ CPU time for output:   2.57821083E-02 s
+ CPU time for preamble, before computation:   8.25400092E-03 s
+ CPU time for computation, before output:   4.14181900     s
+ CPU time for output:   3.54261398E-02 s
+ CPU time for preamble, before computation:   7.69899972E-03 s
+ CPU time for computation, before output:   4.19647217     s
+ CPU time for output:   2.72960663E-02 s
+ CPU time for preamble, before computation:   8.93000141E-03 s
+ CPU time for computation, before output:   4.13930607     s
+ CPU time for output:   2.86879539E-02 s
+ CPU time for preamble, before computation:   7.66500086E-03 s
+ CPU time for computation, before output:   4.20746613     s
+ CPU time for output:   2.80017853E-02 s
+ CPU time for preamble, before computation:   8.46499950E-03 s
+ CPU time for computation, before output:   4.18664694     s
+ CPU time for output:   5.12142181E-02 s
+ CPU time for preamble, before computation:   1.12350006E-02 s
+ CPU time for computation, before output:   4.22464323     s
+ CPU time for output:   3.16910744E-02 s
+ CPU time for preamble, before computation:   9.24699940E-03 s
+ CPU time for computation, before output:   4.26714659     s
+ CPU time for output:   2.71382332E-02 s
+ CPU time for preamble, before computation:   8.02399963E-03 s
+ CPU time for computation, before output:   4.20936632     s
+ CPU time for output:   2.74701118E-02 s
+ CPU time for preamble, before computation:   8.21200013E-03 s
+ CPU time for computation, before output:   4.24304390     s
+ CPU time for output:   2.77090073E-02 s
+ CPU time for preamble, before computation:   8.19800049E-03 s
+ CPU time for computation, before output:   4.29426813     s
+ CPU time for output:   2.71658897E-02 s
+ CPU time for preamble, before computation:   8.29299912E-03 s
+ CPU time for computation, before output:   4.30858803     s
+ CPU time for output:   2.90689468E-02 s
+ CPU time for preamble, before computation:   1.01359989E-02 s
+ CPU time for computation, before output:   4.27538204     s
+ CPU time for output:   2.78930664E-02 s
+ CPU time for preamble, before computation:   8.13000090E-03 s
+ CPU time for computation, before output:   4.27047205     s
+ CPU time for output:   3.04069519E-02 s
+ CPU time for preamble, before computation:   8.57300125E-03 s
+ CPU time for computation, before output:   4.32840824     s
+ CPU time for output:   3.90257835E-02 s
+ CPU time for preamble, before computation:   8.50800052E-03 s
+ CPU time for computation, before output:   4.35526705     s
+ CPU time for output:   2.85120010E-02 s
+ CPU time for preamble, before computation:   8.32699984E-03 s
+ CPU time for computation, before output:   4.50040770     s
+ CPU time for output:   6.17799759E-02 s
+ CPU time for preamble, before computation:   8.70699994E-03 s
+ CPU time for computation, before output:   4.44767189     s
+ CPU time for output:   2.86197662E-02 s
+ CPU time for preamble, before computation:   8.28300044E-03 s
+ CPU time for computation, before output:   4.37808609     s
+ CPU time for output:   2.93140411E-02 s
+ CPU time for preamble, before computation:   8.13999958E-03 s
+ CPU time for computation, before output:   4.25855017     s
+ CPU time for output:   2.87055969E-02 s
+ CPU time for preamble, before computation:   8.37200135E-03 s
+ CPU time for computation, before output:   4.18831110     s
+ CPU time for output:   2.77681351E-02 s
+ CPU time for preamble, before computation:   8.43499973E-03 s
+ CPU time for computation, before output:   4.23447990     s
+ CPU time for output:   2.82292366E-02 s
+ CPU time for preamble, before computation:   8.07099976E-03 s
+ CPU time for computation, before output:   4.19891787     s
+ CPU time for output:   3.58881950E-02 s
+ CPU time for preamble, before computation:   8.25300068E-03 s
+ CPU time for computation, before output:   4.11747169     s
+ CPU time for output:   2.79159546E-02 s
+ CPU time for preamble, before computation:   8.78600031E-03 s
+ CPU time for computation, before output:   4.11973524     s
+ CPU time for output:   2.93679237E-02 s
+ CPU time for preamble, before computation:   8.20800103E-03 s
+ CPU time for computation, before output:   4.09865713     s
+ CPU time for output:   2.85768509E-02 s
+ CPU time for preamble, before computation:   8.20899941E-03 s
+ CPU time for computation, before output:   4.08159924     s
+ CPU time for output:   3.56206894E-02 s
+ CPU time for preamble, before computation:   8.46399926E-03 s
+ CPU time for computation, before output:   4.14704800     s
+ CPU time for output:   2.95977592E-02 s
+ CPU time for preamble, before computation:   8.60499963E-03 s
+ CPU time for computation, before output:   4.20234203     s
+ CPU time for output:   2.99229622E-02 s
+ CPU time for preamble, before computation:   8.50700028E-03 s
+ CPU time for computation, before output:   4.20719624     s
+ CPU time for output:   3.35540771E-02 s
+ CPU time for preamble, before computation:   7.89400004E-03 s
+ CPU time for computation, before output:   4.09124613     s
+ CPU time for output:   3.07302475E-02 s
+ CPU time for preamble, before computation:   8.00000131E-03 s
+ CPU time for computation, before output:   4.17992496     s
+ CPU time for output:   2.90527344E-02 s
+ CPU time for preamble, before computation:   7.78099895E-03 s
+ CPU time for computation, before output:   4.16545725     s
+ CPU time for output:   2.95805931E-02 s
+ CPU time for preamble, before computation:   8.91399942E-03 s
+ CPU time for computation, before output:   4.24811029     s
+ CPU time for output:   3.39846611E-02 s
+ CPU time for preamble, before computation:   8.22499953E-03 s
+ CPU time for computation, before output:   4.32328272     s
+ CPU time for output:   3.13510895E-02 s
+ CPU time for preamble, before computation:   8.68700072E-03 s
+ CPU time for computation, before output:   4.28062296     s
+ CPU time for output:   3.11908722E-02 s
+ CPU time for preamble, before computation:   8.48099962E-03 s
+ CPU time for computation, before output:   4.38509274     s
+ CPU time for output:   3.36561203E-02 s
+ CPU time for preamble, before computation:   7.99700059E-03 s
+ CPU time for computation, before output:   4.32501507     s
+ CPU time for output:   3.07641029E-02 s
+ CPU time for preamble, before computation:   7.99100101E-03 s
+ CPU time for computation, before output:   4.29690695     s
+ CPU time for output:   3.53279114E-02 s
+ CPU time for preamble, before computation:   8.49300064E-03 s
+ CPU time for computation, before output:   4.31466579     s
+ CPU time for output:   3.37142944E-02 s
+ CPU time for preamble, before computation:   8.18599947E-03 s
+ CPU time for computation, before output:   4.39574909     s
+ CPU time for output:   3.25031281E-02 s
+ CPU time for preamble, before computation:   8.41899961E-03 s
+ CPU time for computation, before output:   4.48572922     s
+ CPU time for output:   3.12538147E-02 s
+ CPU time for preamble, before computation:   8.67999904E-03 s
+ CPU time for computation, before output:   4.49005795     s
+ CPU time for output:   3.21540833E-02 s
+ CPU time for preamble, before computation:   8.14200006E-03 s
+ CPU time for computation, before output:   4.57182980     s
+ CPU time for output:   3.35578918E-02 s
+ CPU time for preamble, before computation:   7.59099983E-03 s
+ CPU time for computation, before output:   4.43997288     s
+ CPU time for output:   3.96661758E-02 s
+ CPU time for preamble, before computation:   9.97000001E-03 s
+ CPU time for computation, before output:   4.48664808     s
+ CPU time for output:   3.28617096E-02 s
+ CPU time for preamble, before computation:   8.10799934E-03 s
+ CPU time for computation, before output:   4.49234390     s
+ CPU time for output:   3.15246582E-02 s
+ CPU time for preamble, before computation:   8.46500136E-03 s
+ CPU time for computation, before output:   4.46520805     s
+ CPU time for output:   3.29608917E-02 s
+ CPU time for preamble, before computation:   8.05100054E-03 s
+ CPU time for computation, before output:   4.37794733     s
+ CPU time for output:   3.28078270E-02 s
+ CPU time for preamble, before computation:   8.24599899E-03 s
+ CPU time for computation, before output:   4.45707893     s
+ CPU time for output:   3.18989754E-02 s
+ CPU time for preamble, before computation:   9.55899991E-03 s
+ CPU time for computation, before output:   4.35888815     s
+ CPU time for output:   3.51161957E-02 s
+ CPU time for preamble, before computation:   8.36299919E-03 s
+ CPU time for computation, before output:   4.37155199     s
+ CPU time for output:   3.40442657E-02 s
+ CPU time for preamble, before computation:   8.27900134E-03 s
+ CPU time for computation, before output:   4.33963394     s
+ CPU time for output:   3.29518318E-02 s
+ CPU time for preamble, before computation:   8.17599893E-03 s
+ CPU time for computation, before output:   4.46855116     s
+ CPU time for output:   3.29756737E-02 s
+ CPU time for preamble, before computation:   8.23200122E-03 s
+ CPU time for computation, before output:   4.49932718     s
+ CPU time for output:   3.74016762E-02 s
+ CPU time for preamble, before computation:   7.95499980E-03 s
+ CPU time for computation, before output:   4.52759314     s
+ CPU time for output:   3.43041420E-02 s
+ CPU time for preamble, before computation:   8.35300051E-03 s
+ CPU time for computation, before output:   4.51892805     s
+ CPU time for output:   4.35581207E-02 s
+ CPU time for preamble, before computation:   1.10390019E-02 s
+ CPU time for computation, before output:   4.56918001     s
+ CPU time for output:   3.36856842E-02 s
+ CPU time for preamble, before computation:   7.78099895E-03 s
+ CPU time for computation, before output:   4.58456993     s
+ CPU time for output:   3.48310471E-02 s
+ CPU time for preamble, before computation:   9.64499824E-03 s
+ CPU time for computation, before output:   4.63818312     s
+ CPU time for output:   3.39717865E-02 s
+ CPU time for preamble, before computation:   8.44999962E-03 s
+ CPU time for computation, before output:   4.52566290     s
+ CPU time for output:   5.40170670E-02 s
+ CPU time for preamble, before computation:   8.48799944E-03 s
+ CPU time for computation, before output:   4.50833893     s
+ CPU time for output:   3.49373817E-02 s
+ CPU time for preamble, before computation:   8.05399939E-03 s
+ CPU time for computation, before output:   4.41732025     s
+ CPU time for output:   3.38640213E-02 s
+ CPU time for preamble, before computation:   9.29200090E-03 s
+ CPU time for computation, before output:   4.48078585     s
+ CPU time for output:   3.77368927E-02 s
+ CPU time for preamble, before computation:   8.74800049E-03 s
+ CPU time for computation, before output:   4.43755198     s
+ CPU time for output:   3.53488922E-02 s
+ CPU time for preamble, before computation:   8.75799917E-03 s
+ CPU time for computation, before output:   4.26725721     s
+ CPU time for output:   3.27997208E-02 s
+ CPU time for preamble, before computation:   8.58100131E-03 s
+ CPU time for computation, before output:   4.15477610     s
+ CPU time for output:   4.91328239E-02 s
+ CPU time for preamble, before computation:   8.46900046E-03 s
+ CPU time for computation, before output:   4.28582668     s
+ CPU time for output:   3.84111404E-02 s
+ CPU time for preamble, before computation:   8.26999918E-03 s
+ CPU time for computation, before output:   4.43102598     s
+ CPU time for output:   3.41153145E-02 s
+ CPU time for preamble, before computation:   8.59800167E-03 s
+ CPU time for computation, before output:   4.53963661     s
+ CPU time for output:   3.87582779E-02 s
+ CPU time for preamble, before computation:   8.54099914E-03 s
+ CPU time for computation, before output:   4.63857603     s
+ CPU time for output:   3.48072052E-02 s
+ CPU time for preamble, before computation:   9.30100121E-03 s
+ CPU time for computation, before output:   4.61996365     s
+ CPU time for output:   3.89800072E-02 s
+ CPU time for preamble, before computation:   8.51200148E-03 s
+ CPU time for computation, before output:   4.78631878     s
+ CPU time for output:   5.55381775E-02 s
+ CPU time for preamble, before computation:   1.35249980E-02 s
+ CPU time for computation, before output:   4.83370686     s
+ CPU time for output:   3.88460159E-02 s
+ CPU time for preamble, before computation:   1.01670008E-02 s
+ CPU time for computation, before output:   4.93490505     s
+ CPU time for output:   4.00891304E-02 s
+ CPU time for preamble, before computation:   1.03049986E-02 s
+ CPU time for computation, before output:   4.91968775     s
+ CPU time for output:   3.52373123E-02 s
+ CPU time for preamble, before computation:   8.43900070E-03 s
+ CPU time for computation, before output:   4.88439989     s
+ CPU time for output:   3.47800255E-02 s
+ CPU time for preamble, before computation:   8.18300061E-03 s
+ CPU time for computation, before output:   4.76550674     s
+ CPU time for output:   3.71532440E-02 s
+ CPU time for preamble, before computation:   8.32499936E-03 s
+ CPU time for computation, before output:   4.75773430     s
+ CPU time for output:   3.73611450E-02 s
+ CPU time for preamble, before computation:   8.89699906E-03 s
+ CPU time for computation, before output:   4.67972994     s
+ CPU time for output:   3.67541313E-02 s
+ CPU time for preamble, before computation:   8.48799944E-03 s
+ CPU time for computation, before output:   4.62660599     s
+ CPU time for output:   3.60889435E-02 s
+ CPU time for preamble, before computation:   8.85200128E-03 s
+ CPU time for computation, before output:   4.59603071     s
+ CPU time for output:   3.50370407E-02 s
+ CPU time for preamble, before computation:   8.41800123E-03 s
+ CPU time for computation, before output:   4.50624084     s
+ CPU time for output:   3.77969742E-02 s
+ CPU time for preamble, before computation:   8.17099959E-03 s
+ CPU time for computation, before output:   4.47500181     s
+ CPU time for output:   3.46169472E-02 s
+ CPU time for preamble, before computation:   8.68199952E-03 s
+ CPU time for computation, before output:   4.56814098     s
+ CPU time for output:   3.51800919E-02 s
+ CPU time for preamble, before computation:   8.46400112E-03 s
+ CPU time for computation, before output:   4.66849995     s
+ CPU time for output:   3.75900269E-02 s
+ CPU time for preamble, before computation:   9.12000053E-03 s
+ CPU time for computation, before output:   4.65109730     s
+ CPU time for output:   3.62548828E-02 s
+ CPU time for preamble, before computation:   8.17700103E-03 s
+ CPU time for computation, before output:   4.76328278     s
+ CPU time for output:   3.61542702E-02 s
+ CPU time for preamble, before computation:   7.84899853E-03 s
+ CPU time for computation, before output:   4.81061029     s
+ CPU time for output:   3.56979370E-02 s
+ CPU time for preamble, before computation:   8.70199874E-03 s
+ CPU time for computation, before output:   4.79274273     s
+ CPU time for output:   4.92253304E-02 s
+ CPU time for preamble, before computation:   8.64900090E-03 s
+ CPU time for computation, before output:   4.74041319     s
+ CPU time for output:   3.76439095E-02 s
+ CPU time for preamble, before computation:   8.51999968E-03 s
+ CPU time for computation, before output:   4.77876472     s
+ CPU time for output:   3.91721725E-02 s
+ CPU time for preamble, before computation:   8.67299922E-03 s
+ CPU time for computation, before output:   4.80001402     s
+ CPU time for output:   3.66878510E-02 s
+ CPU time for preamble, before computation:   8.78899917E-03 s
+ CPU time for computation, before output:   4.83746099     s
+ CPU time for output:   3.91716957E-02 s
+ CPU time for preamble, before computation:   8.11400078E-03 s
+ CPU time for computation, before output:   4.79883575     s
+ CPU time for output:   3.75771523E-02 s
+ CPU time for preamble, before computation:   1.14960000E-02 s
+ CPU time for computation, before output:   4.76159000     s
+ CPU time for output:   3.64670753E-02 s
+ CPU time for preamble, before computation:   8.93799961E-03 s
+ CPU time for computation, before output:   4.81646490     s
+ CPU time for output:   3.77430916E-02 s
+ CPU time for preamble, before computation:   7.96899945E-03 s
+ CPU time for computation, before output:   4.78198385     s
+ CPU time for output:   3.96890640E-02 s
+ CPU time for preamble, before computation:   8.76099989E-03 s
+ CPU time for computation, before output:   4.84586334     s
+ CPU time for output:   3.85127068E-02 s
+ CPU time for preamble, before computation:   8.86699930E-03 s
+ CPU time for computation, before output:   4.78222513     s
+ CPU time for output:   3.91736031E-02 s
+ CPU time for preamble, before computation:   8.30600038E-03 s
+ CPU time for computation, before output:   4.80864096     s
+ CPU time for output:   4.20217514E-02 s
+ CPU time for preamble, before computation:   8.33899900E-03 s
+ CPU time for computation, before output:   4.72671413     s
+ CPU time for output:   3.75037193E-02 s
+ CPU time for preamble, before computation:   8.45600106E-03 s
+ CPU time for computation, before output:   4.69476414     s
+ CPU time for output:   3.75981331E-02 s
+ CPU time for preamble, before computation:   8.89999978E-03 s
+ CPU time for computation, before output:   4.78418589     s
+ CPU time for output:   4.26821709E-02 s
+ CPU time for preamble, before computation:   1.18519980E-02 s
+ CPU time for computation, before output:   4.74863815     s
+ CPU time for output:   4.04009819E-02 s
+ CPU time for preamble, before computation:   8.57800059E-03 s
+ CPU time for computation, before output:   4.78191376     s
+ CPU time for output:   7.04903603E-02 s
+ CPU time for preamble, before computation:   9.74899903E-03 s
+ CPU time for computation, before output:   4.93484402     s
+ CPU time for output:   3.98836136E-02 s
+ CPU time for preamble, before computation:   9.29900073E-03 s
+ CPU time for computation, before output:   4.86159325     s
+ CPU time for output:   4.04858589E-02 s
+ CPU time for preamble, before computation:   8.62800144E-03 s
+ CPU time for computation, before output:   4.99659586     s
+ CPU time for output:   4.25519943E-02 s
+ CPU time for preamble, before computation:   1.25939995E-02 s
+ CPU time for computation, before output:   4.88798809     s
+ CPU time for output:   3.99937630E-02 s
+ CPU time for preamble, before computation:   9.12599824E-03 s
+ CPU time for computation, before output:   4.85393715     s
+ CPU time for output:   3.79409790E-02 s
+ CPU time for preamble, before computation:   8.29800032E-03 s
+ CPU time for computation, before output:   4.76458454     s
+ CPU time for output:   3.95164490E-02 s
+ CPU time for preamble, before computation:   8.24600086E-03 s
+ CPU time for computation, before output:   4.82131815     s
+ CPU time for output:   3.74808311E-02 s
+ CPU time for preamble, before computation:   8.58400017E-03 s
+ CPU time for computation, before output:   4.83722687     s
+ CPU time for output:   3.97849083E-02 s
+ CPU time for preamble, before computation:   8.30800086E-03 s
+ CPU time for computation, before output:   4.84688091     s
+ CPU time for output:   4.01020050E-02 s
+ CPU time for preamble, before computation:   8.28600116E-03 s
+ CPU time for computation, before output:   4.82215309     s
+ CPU time for output:   3.81011963E-02 s
+ CPU time for preamble, before computation:   8.30699876E-03 s
+ CPU time for computation, before output:   4.81388330     s
+ CPU time for output:   3.96976471E-02 s
+ CPU time for preamble, before computation:   8.32000002E-03 s
+ CPU time for computation, before output:   4.76200294     s
+ CPU time for output:   3.88798714E-02 s
+ CPU time for preamble, before computation:   8.32000002E-03 s
+ CPU time for computation, before output:   4.80108976     s
+ CPU time for output:   4.05178070E-02 s
+ CPU time for preamble, before computation:   8.70900042E-03 s
+ CPU time for computation, before output:   4.71901083     s
+ CPU time for output:   4.51593399E-02 s
+ CPU time for preamble, before computation:   8.44199955E-03 s
+ CPU time for computation, before output:   4.65090466     s
+ CPU time for output:   3.99122238E-02 s
+ CPU time for preamble, before computation:   8.53100047E-03 s
+ CPU time for computation, before output:   4.55531406     s
+ CPU time for output:   5.05151749E-02 s
+ CPU time for preamble, before computation:   8.70000012E-03 s
+ CPU time for computation, before output:   4.57411909     s
+ CPU time for output:   3.90167236E-02 s
+ CPU time for preamble, before computation:   8.28600116E-03 s
+ CPU time for computation, before output:   4.59790993     s
+ CPU time for output:   4.31842804E-02 s
+ CPU time for preamble, before computation:   8.68600048E-03 s
+ CPU time for computation, before output:   4.54939079     s
+ CPU time for output:   3.99689674E-02 s
+ CPU time for preamble, before computation:   8.86599906E-03 s
+ CPU time for computation, before output:   4.59149885     s
+ CPU time for output:   4.13169861E-02 s
+ CPU time for preamble, before computation:   8.11400078E-03 s
+ CPU time for computation, before output:   4.65328360     s
+ CPU time for output:   4.03270721E-02 s
+ CPU time for preamble, before computation:   8.86199996E-03 s
+ CPU time for computation, before output:   4.61685514     s
+ CPU time for output:   4.03299332E-02 s
+ CPU time for preamble, before computation:   8.49699974E-03 s
+ CPU time for computation, before output:   4.63484526     s
+ CPU time for output:   4.23207283E-02 s
+ CPU time for preamble, before computation:   8.61199945E-03 s
+ CPU time for computation, before output:   4.44737291     s
+ CPU time for output:   4.36348915E-02 s
+ CPU time for preamble, before computation:   8.19900073E-03 s
+ CPU time for computation, before output:   4.46586180     s
+ CPU time for output:   3.99980545E-02 s
+ CPU time for preamble, before computation:   8.47899914E-03 s
+ CPU time for computation, before output:   4.50127411     s
+ CPU time for output:   4.55679893E-02 s
+ CPU time for preamble, before computation:   8.38500075E-03 s
+ CPU time for computation, before output:   3.95299721     s
+ CPU time for output:   3.86288166E-02 s
+ CPU time for preamble, before computation:   8.41900147E-03 s
+ CPU time for computation, before output:   4.05519533     s
+ CPU time for output:   3.99999619E-02 s

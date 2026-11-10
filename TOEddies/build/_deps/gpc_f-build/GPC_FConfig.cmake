@@ -1,0 +1,6 @@
+include(CMakeFindDependencyMacro)
+find_dependency(Contour_531)
+find_dependency(GPC)
+find_dependency(fortrangis)
+find_dependency(Shapelib_03)
+include("${CMAKE_CURRENT_LIST_DIR}/GPC_FTargets.cmake")
