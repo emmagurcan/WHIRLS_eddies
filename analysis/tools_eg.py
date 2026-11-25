@@ -605,9 +605,34 @@ def make_to_sn(sec):
 # ---------------------------------------------------------------------------
 # One call per transect
 # ---------------------------------------------------------------------------
+def subset_section(sec, keep):
+    """Keep only the casts where `keep` is True (every array whose last axis is the casts)."""
+    keep = np.asarray(keep, bool)
+    m = keep.size
+    out = {}
+    for k, val in sec.items():
+        if isinstance(val, pd.DatetimeIndex):
+            out[k] = val[keep]
+        elif isinstance(val, np.ndarray) and val.ndim >= 1 and val.shape[-1] == m:
+            out[k] = val[..., keep]
+        else:
+            out[k] = val
+    return out
+
+
+def auto_flip(xdir):
+    """True if the x axis must be inverted so the section reads like the map:
+    zonal transect -> West on the left, East on the right;
+    meridional transect -> South on the left, North on the right.
+    xdir = (east, north) unit vector of +x (= direction the ship moves)."""
+    east, north = xdir
+    return bool(east < 0) if abs(east) >= abs(north) else bool(north < 0)
+
+
 def process_transect(df, nav=None, adcp=None, dp=1.0, smooth_z=5, smooth_x=3,
                      min_cast_depth=20.0, cast_col=None, title="", savepath=None,
-                     map_draw=None, map_args=None, eddy=None, **plot_kw):
+                     map_draw=None, map_args=None, eddy=None, x_max_km=None, x_min_km=None,
+                     **plot_kw):
     """
     df   : raw MVP DataFrame for one transect
     nav  : (time, lon, lat) of ship GPS, used if MVP LAT/LON are NaN
@@ -619,6 +644,11 @@ def process_transect(df, nav=None, adcp=None, dp=1.0, smooth_z=5, smooth_x=3,
     adcp : (lon, lat, depth, u, v) for zeta, e.g.
            (adcp_cut.lon_adcp.values, adcp_cut.lat_adcp.values, adcp_cut.depth.values,
             adcp_cut.uvel_adcp.values, adcp_cut.vvel_adcp.values)
+    x_min_km, x_max_km : keep only the casts between these along-track distances (km from
+           the first cast, in the direction of motion), e.g. x_max_km=105 to drop
+           everything after a gap. x is then recomputed on the kept casts.
+    flip_x (in plot_kw): "auto" (default with a map) -> the section reads like the map
+           (W left / E right, or S left / N right); True / False to force it.
     """
     if nav is not None:
         df = fill_positions(df, *nav)
@@ -632,6 +662,18 @@ def process_transect(df, nav=None, adcp=None, dp=1.0, smooth_z=5, smooth_x=3,
     casts = fill_cast_positions(casts)
     sec = build_section(casts, dp=dp)
     sec["x"], sec["xdir"] = along_track_x(sec["lon"], sec["lat"])
+
+    if x_min_km is not None or x_max_km is not None:
+        xkm = sec["x"] / 1e3
+        keep = np.ones(xkm.size, bool)
+        if x_min_km is not None:
+            keep &= xkm >= x_min_km
+        if x_max_km is not None:
+            keep &= xkm <= x_max_km
+        print(f"cut {x_min_km}-{x_max_km} km: {keep.sum()} of {keep.size} casts kept")
+        sec = subset_section(sec, keep)
+        # origin = first kept cast, direction = first -> last kept cast
+        sec["x"], sec["xdir"] = along_track_x(sec["lon"], sec["lat"])
  
     if map_draw is not None:
         fig, axs = plot_section_with_map(sec, adcp, map_draw=map_draw, map_args=map_args, title=title,
@@ -934,7 +976,7 @@ def plot_eddies(ax, eddies, color, crs):
         #     ),
         # )
  
-def plot_section(sec, title="", pmax=None, sig_levels=None, flip_x=False, savepath=None):
+def plot_section(sec, title="", pmax=None, sig_levels=None, flip_x="auto", savepath=None):
     xkm = sec["x"] / 1e3
     p = sec["p"]
     sig_levels = sig_levels if sig_levels is not None else np.arange(
@@ -973,6 +1015,8 @@ def plot_section(sec, title="", pmax=None, sig_levels=None, flip_x=False, savepa
     axs[0].invert_yaxis()
     if pmax:
         axs[0].set_ylim(pmax, 0)
+    if flip_x == "auto":
+        flip_x = auto_flip(sec["xdir"])
     if flip_x:
         axs[0].invert_xaxis()
     axs[-1].set_xlabel("Along-track distance (km)")
@@ -1055,7 +1099,6 @@ def mark_eddies_on_sections(axs, sec, z, a_lon, a_lat, u, v, edds, min_fixes=5):
         x = np.atleast_1d(np.asarray(x, float))
         return np.isfinite(x) & (x >= x_lo) & (x <= x_hi)
  
-    lay = (z >= NEN_LAYER[0]) & (z <= NEN_LAYER[1])
     for e in edds:
         tag = "C" if e.get("cyc", True) else "AC"
         col = "tab:blue" if e.get("cyc", True) else "tab:red"
@@ -1071,33 +1114,23 @@ def mark_eddies_on_sections(axs, sec, z, a_lon, a_lat, u, v, edds, min_fixes=5):
                   f"({x_lo:.0f}-{x_hi:.0f} km) -> not marked")
             x_c = np.nan
  
-        # --- Nencioli, this eddy only ---
+        # --- Nencioli, this eddy only (layer centre + one centre per depth) ---
         x_nen, x_nen_z = np.nan, np.full(len(z), np.nan)
-        inside = MplPath(e["outer"]).contains_points(np.c_[a_lon, a_lat])
-        inside &= np.isfinite(a_lon) & np.isfinite(a_lat)
-        if inside.sum() >= min_fixes:
-            ox, oy = to_xy(e["outer"][:, 0], e["outer"][:, 1], clon, clat)
-            search = min(NEN_SEARCH_KM, float(np.nanmax(np.hypot(ox, oy))))   # outer radius
-            lo, la, uu, vv = a_lon[inside], a_lat[inside], u[inside], v[inside]
- 
-            nd = nencioli_center(lo, la, uu, vv, clon, clat, search_km=search)
-            xz = to_sn(nd["lon"], nd["lat"])[0]
-            x_nen_z = np.where(in_frame(xz) & ~nd["edge"], xz, np.nan)
- 
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", RuntimeWarning)
-                ul, vl = np.nanmean(uu[:, lay], axis=1), np.nanmean(vv[:, lay], axis=1)
-            nl = nencioli_center(lo, la, ul[:, None], vl[:, None], clon, clat, search_km=search)
-            xl = float(to_sn(nl["lon"][0], nl["lat"][0])[0])
-            if nl["edge"][0]:
+        nen = nencioli_eddy(e, dict(lon=a_lon, lat=a_lat, z=z, u=u, v=v),
+                            min_fixes=min_fixes, by_depth=True)
+        if nen is None:
+            print(f"  {tag}: too few SADCP fixes inside the outer contour -> no Nencioli")
+        else:
+            xz = to_sn(nen["lon_z"], nen["lat_z"])[0]
+            x_nen_z = np.where(in_frame(xz) & ~nen["edge_z"], xz, np.nan)
+            xl = float(to_sn(nen["lon"], nen["lat"])[0])
+            if nen["edge"]:
                 print(f"  {tag}: Nencioli minimum on the edge of the search box -> no centre")
             elif not in_frame(xl)[0]:
                 print(f"  {tag}: Nencioli center at {xl:.0f} km, outside section -> not marked")
             else:
                 x_nen = xl
-        else:
-            print(f"  {tag}: only {inside.sum()} SADCP fixes inside the outer contour -> no Nencioli")
- 
+
         for ax in axs[:3]:                                   # MVP panels: vertical lines
             mark_section_clean(ax, x_oc, x_ms, x_c, x_nen, p, col, vertical_nen=True, tag=tag)
         mark_section_clean(axs[3], x_oc, x_ms, x_c, x_nen_z, z, col, vertical_nen=False, tag=tag)
@@ -1105,7 +1138,7 @@ def mark_eddies_on_sections(axs, sec, z, a_lon, a_lat, u, v, edds, min_fixes=5):
  
 def plot_section_with_map(sec, adcp, map_draw=None, map_args=None, title="", pmax=None, sig_levels=None,
                           map_extent=None, map_pad=(2.5, 2.0), vel_lim=None, edd=None, savepath=None,
-                          flip_x=True, woa_lon=None, woa_lat=None):
+                          flip_x="auto", woa_lon=None, woa_lat=None):
     """
     Layout: 2 x 2 sections on the left
                 (a) Theta        (b) S_A
@@ -1119,7 +1152,10 @@ def plot_section_with_map(sec, adcp, map_draw=None, map_args=None, title="", pma
     pmax       : max pressure/depth shown on all 4 panels. Default = deepest data of each panel.
     map_extent : [lon_min, lon_max, lat_min, lat_max]; default = transect +/- map_pad (deg).
     edd        : list of eddies from eddies_on_transect (or a single dict); all are marked.
-    flip_x     : True -> 0 km on the right (x axis inverted on all 4 panels).
+    flip_x     : "auto" -> the x axis is oriented like the map (W left / E right for a zonal
+                 transect, S left / N right for a meridional one), so the ship moves across
+                 the panels the same way it moves on the map. True -> 0 km on the right,
+                 False -> 0 km on the left.
     """
     import matplotlib.patheffects as pe
     from matplotlib.gridspec import GridSpec
@@ -1171,6 +1207,10 @@ def plot_section_with_map(sec, adcp, map_draw=None, map_args=None, title="", pma
                            sec["lon"][0], sec["lat"][0], sec["xdir"])
     s = s_m / 1e3
     ex = sec["xdir"]
+    # only the SADCP profiles along the MVP section (matters when the section is cut)
+    x_lo, x_hi = np.nanmin(xkm), np.nanmax(xkm)
+    on = np.isfinite(s) & (s >= x_lo - DS_KM) & (s <= x_hi + DS_KM)
+    a_lon, a_lat, u, v, s = (np.asarray(a)[on] for a in (a_lon, a_lat, u, v, s))
     vn = -u * ex[1] + v * ex[0]        # positive = to the LEFT of the 0 km -> end direction
  
     edges = np.arange(np.floor(np.nanmin(s)), np.ceil(np.nanmax(s)) + DS_KM, DS_KM)
@@ -1218,6 +1258,8 @@ def plot_section_with_map(sec, adcp, map_draw=None, map_args=None, title="", pma
  
     # x axis: shared, labels only on the bottom row
     axs[0].set_xlim(np.nanmin(xkm), np.nanmax(xkm))
+    if flip_x == "auto":
+        flip_x = auto_flip(sec["xdir"])
     if flip_x:
         axs[0].invert_xaxis()                     # applies to all 4 (sharex)
     for ax in axs[:2]:                            # top row: ticks, no labels
@@ -1278,3 +1320,282 @@ def plot_section_with_map(sec, adcp, map_draw=None, map_args=None, title="", pma
     if savepath:
         fig.savefig(savepath, dpi=300, bbox_inches="tight")
     return fig, [axm] + axs
+
+###### EDDY CHARACTERISTICS (WOA anomalies, zeta/f, EPV core, eddy metrics) ######
+# Same methods and parameters as anom_woa.ipynb and epv_calc.ipynb, as functions.
+from scipy.ndimage import uniform_filter1d
+from scipy import ndimage
+
+DIR_WOA = BASE / "data/woa"
+WOA_RADIUS_KM = 100       # WOA grid points within this distance of the eddy centre
+RHO0 = 1025.0             # kg m^-3
+DZ_EPV = 8.0              # m, depth bins of the EPV grid
+ZMAX_EPV = 1000.0         # m, bottom of the EPV grid
+SMOOTH_X_V = 3            # running mean on v_perp along x (bins)
+SMOOTH_Z_V = 3            # running mean on v_perp in depth (SADCP levels)
+SMOOTH_Z_B = 3            # running mean on b in depth (DZ_EPV bins)
+MAX_XGAP_KM = 10          # fill MVP gaps along x up to this size (km)
+REF_ZMIN = 10.0           # m: background levels shallower than this are ignored
+MLD_DSIG = 0.03           # kg m^-3: background mixed-layer criterion
+WOA_N2_SMOOTH_M = 150     # m, running mean on N^2_ref for WOA
+EPV_X_MIN = 1e-13         # s^-3: R masked where |EPV_x| is below this
+BETA = 40                 # eddy core: |dEPV_z| > BETA |EPV_x|
+CORE_SMOOTH = 3           # bins, smoothing before the core test
+DEPV_MIN = 1e-11          # s^-3: |dEPV_z| must also exceed this
+CORE_ZMIN = 60            # m: automatic seed searched below this depth
+CORE_SIGN = True          # require dEPV_z of the eddy's sign
+
+
+def nan_smooth(a, size, axis):
+    """Running mean that ignores NaNs (NaNs stay NaN)."""
+    if size <= 1:
+        return a
+    w = np.isfinite(a).astype(float)
+    num = uniform_filter1d(np.where(w > 0, a, 0.0), size, axis=axis, mode="nearest")
+    den = uniform_filter1d(w, size, axis=axis, mode="nearest")
+    out = num / np.where(den > 0, den, np.nan)
+    out[w == 0] = np.nan
+    return out
+
+
+# ---------------- WOA reference and anomalies on isopycnals ----------------
+def woa_reference_around(lon_c, lat_c, radius_km=WOA_RADIUS_KM, dir_woa=DIR_WOA):
+    """Mean WOA (July) profile of the grid points within radius_km of (lon_c, lat_c).
+    -> ref = dict(p, CT, SA, sig0) on the WOA levels with data, and the lon/lat of the points used."""
+    f_t = dir_woa / "temp" / sorted(os.listdir(dir_woa / "temp"))[0]
+    f_s = dir_woa / "salt" / sorted(os.listdir(dir_woa / "salt"))[0]
+    with nc.Dataset(f_t) as dt, nc.Dataset(f_s) as dsl:
+        lon2d, lat2d = np.meshgrid(np.array(dt["lon"][:]), np.array(dt["lat"][:]))
+        temp = np.ma.filled(dt["t_an"][:], np.nan)
+        sal = np.ma.filled(dsl["s_an"][:], np.nan)
+        depth = np.array(dt["depth"][:], float)
+    dist = np.hypot((lat2d - lat_c) * 111.0, (lon2d - lon_c) * 111.0 * np.cos(np.deg2rad(lat_c)))
+    mask = (dist <= radius_km) & np.isfinite(temp[0, 0]) & np.isfinite(sal[0, 0])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        t = np.squeeze(np.nanmean(temp[..., mask], axis=-1))
+        s = np.squeeze(np.nanmean(sal[..., mask], axis=-1))
+    lo, la = lon2d[mask].mean(), lat2d[mask].mean()
+    p = gsw.p_from_z(-depth, la)
+    SA = gsw.SA_from_SP(s, p, lo, la)
+    CT = gsw.CT_from_t(SA, t, p)
+    ok = np.isfinite(SA) & np.isfinite(CT)
+    ref = dict(p=p[ok], CT=CT[ok], SA=SA[ok], sig0=gsw.sigma0(SA, CT)[ok], file=f_t.name)
+    return ref, lon2d[mask], lat2d[mask]
+
+
+def interp_on_rho(sigma, var, ind_rho):
+    """var(sigma) -> var on the density levels ind_rho (NaN outside the sigma range)."""
+    ok = np.isfinite(sigma) & np.isfinite(var)
+    if ok.sum() < 2:
+        return np.full(len(ind_rho), np.nan)
+    order = np.argsort(sigma[ok])
+    s, idx = np.unique(sigma[ok][order], return_index=True)
+    if s.size < 2:
+        return np.full(len(ind_rho), np.nan)
+    return np.interp(ind_rho, s, var[ok][order][idx], left=np.nan, right=np.nan)
+
+
+def iso_anomaly(ref, sec, var="CT", pas=0.01):
+    """Anomaly of sec[var] (CT or SA) relative to ref ON ISOPYCNALS (Barabinot et al. 2025),
+    put back at the pressure of each isopycnal in each cast -> same shape as sec["CT"].
+    var="sig0": density anomaly at constant pressure instead."""
+    p, sig = sec["p"], sec["sig0"]
+    if var == "sig0":
+        return sig - np.interp(p, ref["p"], ref["sig0"], left=np.nan, right=np.nan)[:, None]
+    ind_rho = np.arange(22, 28, pas)
+    ref_i = interp_on_rho(ref["sig0"], ref[var], ind_rho)
+    out = np.full(sig.shape, np.nan)
+    for i in range(sig.shape[1]):
+        a_rho = interp_on_rho(sig[:, i], sec[var][:, i], ind_rho) - ref_i
+        p_rho = interp_on_rho(sig[:, i], p, ind_rho)
+        good = np.isfinite(a_rho) & np.isfinite(p_rho)
+        if good.sum() < 2:
+            continue
+        o = np.argsort(p_rho[good])
+        d, idx = np.unique(p_rho[good][o], return_index=True)
+        if d.size >= 2:
+            out[:, i] = np.interp(p, d, a_rho[good][o][idx], left=np.nan, right=np.nan)
+    return out
+
+
+# ---------------- zeta/f and Ertel PV on the section ----------------
+def section_vorticity(sec, adcp, dx_km=DS_KM, smooth_x=SMOOTH_X_V, smooth_z=SMOOTH_Z_V):
+    """SADCP cross-track velocity (+ to the LEFT of +x) in dx_km bins on the section axis,
+    zeta = dv_perp/dx, f and zeta/f. Only the SADCP profiles along the (possibly cut) section."""
+    z = np.asarray(adcp["z"], float)
+    lon, lat = np.asarray(adcp["lon"], float), np.asarray(adcp["lat"], float)
+    s = along_track_x(lon, lat, sec["lon"][0], sec["lat"][0], sec["xdir"])[0] / 1e3
+    xkm = sec["x"] / 1e3
+    on = np.isfinite(s) & (s >= np.nanmin(xkm) - dx_km) & (s <= np.nanmax(xkm) + dx_km)
+    ex = sec["xdir"]
+    vp = -np.asarray(adcp["u"])[on] * ex[1] + np.asarray(adcp["v"])[on] * ex[0]
+    edges = np.arange(np.floor(np.nanmin(s[on])), np.ceil(np.nanmax(s[on])) + dx_km, dx_km)
+    xg, V, cnt = bin_columns(s[on], vp, edges)
+    _, LATb, _ = bin_columns(s[on], lat[on][:, None], edges)
+    V = fill_z_gaps(V, z)
+    V = nan_smooth(nan_smooth(V, smooth_x, axis=0), smooth_z, axis=1)
+    zeta = np.gradient(V, xg * 1e3, axis=0)
+    lat_b = LATb[:, 0]
+    lat_b = np.where(np.isfinite(lat_b), lat_b, np.nanmean(lat_b))
+    f = 2 * OMEGA * np.sin(np.deg2rad(lat_b))
+    return dict(x=xg, z=z, v_perp=V, zeta=zeta, f=f, ro=zeta / f[:, None], n_fixes=cnt, dx_km=dx_km)
+
+
+def _interp_rows(A, z_in, z_out):
+    out = np.full((A.shape[0], len(z_out)), np.nan)
+    for i, row in enumerate(A):
+        ok = np.isfinite(row)
+        if ok.sum() >= 2:
+            out[i] = np.interp(z_out, z_in[ok], row[ok], left=np.nan, right=np.nan)
+    return out
+
+
+def section_epv(sec, vort, dz=DZ_EPV, zmax=ZMAX_EPV):
+    """Ertel PV on the vorticity x bins and dz depth bins (epv_calc.ipynb):
+    EPV_z = (f + zeta) N^2, EPV_x = -(dv_perp/dz)(db/dx), b from the MVP sigma0."""
+    xg, z_a, dx = vort["x"], vort["z"], vort["dx_km"]
+    edges_x = np.r_[xg - dx / 2, xg[-1] + dx / 2]
+    lat0 = np.nanmean(sec["lat"])
+    depth_mvp = -gsw.z_from_p(sec["p"], lat0)
+    has_v = np.isfinite(vort["v_perp"]).any(axis=0)
+    z_top = np.nanmin(z_a[has_v])
+    z_bot = min(zmax, np.nanmax(z_a[has_v]), np.nanmax(depth_mvp[np.isfinite(sec["sig0"]).any(axis=1)]))
+    z_edges = np.arange(z_top - dz / 2, z_bot + dz / 2, dz)
+    z = 0.5 * (z_edges[1:] + z_edges[:-1])
+
+    V = _interp_rows(vort["v_perp"], z_a, z)
+    zeta = np.gradient(V, xg * 1e3, axis=0)
+    dvdz = -np.gradient(V, z, axis=1)                       # z up
+    b_sec = -G * (sec["sig0"] + 1000.0 - RHO0) / RHO0
+    _, Bx, _ = bin_columns(sec["x"] / 1e3, b_sec.T, edges_x)
+    _, Bxz, _ = bin_columns(depth_mvp, Bx.T, z_edges)
+    B = pd.DataFrame(Bxz.T).interpolate(axis=0, limit=int(MAX_XGAP_KM // dx),
+                                        limit_area="inside").values
+    B = nan_smooth(nan_smooth(B, SMOOTH_X_V, axis=0), SMOOTH_Z_B, axis=1)
+    N2 = -np.gradient(B, z, axis=1)
+    dbdx = np.gradient(B, xg * 1e3, axis=0)
+    f = vort["f"]
+    EPV_z = (f[:, None] + zeta) * N2
+    EPV_x = -dvdz * dbdx
+    return dict(x=xg, z=z, f=f, v_perp=V, zeta=zeta, dvdz=dvdz, b=B, N2=N2, dbdx=dbdx,
+                EPV=EPV_z + EPV_x, EPV_z=EPV_z, EPV_x=EPV_x, lat0=lat0,
+                sig0=-(B * RHO0 / G) + RHO0 - 1000.0)
+
+
+def epv_background(ref, lat0, dz=DZ_EPV):
+    """Background b, sigma0, N^2 on its own depth grid (CTD: dense; WOA: coarse levels)."""
+    d = -gsw.z_from_p(ref["p"], lat0)
+    b = -G * (ref["sig0"] + 1000.0 - RHO0) / RHO0
+    o = np.argsort(d)
+    d, b = d[o], b[o]
+    keep = d >= REF_ZMIN
+    d, b = d[keep], b[keep]
+    sig_raw = -(b * RHO0 / G) + RHO0 - 1000.0
+    below = np.where(sig_raw >= sig_raw[0] + MLD_DSIG)[0]
+    mld = d[below[0]] if below.size else d[-1]
+    N2_ml = -(np.interp(mld, d, b) - b[0]) / (mld - d[0])
+    edges = np.arange(REF_ZMIN, d.max() + dz, dz)
+    zr = 0.5 * (edges[1:] + edges[:-1])
+    if np.nanmedian(np.diff(d)) <= dz:                       # dense (CTD)
+        _, bb, _ = bin_columns(d, b[:, None], edges)
+        bb = nan_smooth(bb[:, 0][None, :], SMOOTH_Z_B, axis=1)[0]
+        N2 = nan_smooth(-np.gradient(bb, zr)[None, :], SMOOTH_Z_B, axis=1)[0]
+    else:                                                    # coarse (WOA)
+        bb = np.interp(zr, d, b, left=np.nan, right=np.nan)
+        N2 = np.interp(zr, 0.5 * (d[1:] + d[:-1]), -np.diff(b) / np.diff(d), left=np.nan, right=np.nan)
+        N2 = nan_smooth(N2[None, :], max(1, int(round(WOA_N2_SMOOTH_M / dz))), axis=1)[0]
+    return dict(z=zr, b=bb, sig0=-(bb * RHO0 / G) + RHO0 - 1000.0, N2=N2, mld=mld, N2_ml=N2_ml)
+
+
+def epv_anomaly_iso(epv, ref, outcrop="nan"):
+    """dEPV_z = EPV_z - f N^2_ref(sigma0) (background N^2 on the same isopycnal), R = dEPV_z/EPV_x."""
+    prof = epv_background(ref, epv["lat0"])
+    ok = np.isfinite(prof["sig0"]) & np.isfinite(prof["N2"])
+    s, i = np.unique(np.maximum.accumulate(prof["sig0"][ok]), return_index=True)
+    left = prof["N2_ml"] if outcrop == "surface" else np.nan
+    N2r = np.interp(epv["sig0"], s, prof["N2"][ok][i], left=left, right=np.nan)
+    f2 = epv["f"][:, None]
+    dEPV_z = epv["EPV_z"] - f2 * N2r
+    with np.errstate(divide="ignore", invalid="ignore"):
+        R = np.where(np.abs(epv["EPV_x"]) > EPV_X_MIN, dEPV_z / epv["EPV_x"], np.nan)
+    return dict(prof=prof, N2r=N2r, EPV_ref=f2 * N2r, dEPV_z=dEPV_z, R=R, sig_ref_min=s[0])
+
+
+def epv_core_mask(epv, an, eddy, to_sn, beta=BETA, seed=None):
+    """Eddy core (Barabinot et al. sect. 4.5): connected region around the seed where
+    dEPV_z (of the eddy's sign) > beta |EPV_x|. Seed = TOEddies centre column, depth of
+    max dEPV_z below CORE_ZMIN. -> (mask (nx, nz), seed (x_km, z_m))."""
+    sgn = -1.0 if eddy["cyc"] else 1.0                       # SH: AC -> dEPV_z > 0
+    dE_s = nan_smooth(nan_smooth(an["dEPV_z"], CORE_SMOOTH, 0), CORE_SMOOTH, 1)
+    dE = sgn * dE_s if CORE_SIGN else np.abs(dE_s)
+    Ex = nan_smooth(nan_smooth(np.abs(epv["EPV_x"]), CORE_SMOOTH, 0), CORE_SMOOTH, 1)
+    crit = np.isfinite(dE) & np.isfinite(Ex) & (dE > beta * Ex) & (dE > DEPV_MIN)
+    if seed is None:
+        x_c = float(to_sn(*eddy["center"])[0])
+        ix = int(np.argmin(np.abs(epv["x"] - x_c)))
+        col = np.where(epv["z"] >= CORE_ZMIN, sgn * an["dEPV_z"][ix], np.nan)
+        if not np.isfinite(col).any():
+            return np.zeros_like(crit), (epv["x"][ix], np.nan)
+        seed = (epv["x"][ix], epv["z"][int(np.nanargmax(col))])
+    ix = int(np.argmin(np.abs(epv["x"] - seed[0])))
+    iz = int(np.argmin(np.abs(epv["z"] - seed[1])))
+    lab, _ = ndimage.label(crit, structure=np.ones((3, 3)))
+    if lab[ix, iz] == 0:
+        return np.zeros_like(crit), seed
+    return ndimage.binary_fill_holes(lab == lab[ix, iz]), seed
+
+
+def core_on_section(core, epv, sec):
+    """EPV core mask (nx, nz on the EPV grid) -> boolean mask on the MVP section grid
+    (pressure x cast, like sec["CT"]): True where the cast's x bin and the level's depth
+    bin are inside the core."""
+    dx = np.median(np.diff(epv["x"]))
+    dz = np.median(np.diff(epv["z"]))
+    ix = np.rint((sec["x"] / 1e3 - epv["x"][0]) / dx).astype(int)
+    depth = -gsw.z_from_p(sec["p"], epv["lat0"])
+    iz = np.rint((depth - epv["z"][0]) / dz).astype(int)
+    okx = (ix >= 0) & (ix < core.shape[0])
+    okz = (iz >= 0) & (iz < core.shape[1])
+    m = np.zeros((len(sec["p"]), len(sec["x"])), bool)
+    m[np.ix_(okz, okx)] = core[np.ix_(ix[okx], iz[okz])].T
+    return m
+
+
+# ---------------- Nencioli centre of one eddy ----------------
+def nencioli_eddy(eddy, adcp, min_fixes=5, layer=NEN_LAYER, by_depth=False):
+    """Nencioli centre of ONE eddy from the SADCP fixes inside its outer contour, in a search box
+    no larger than the eddy (so a neighbouring eddy cannot pull the centre away).
+    adcp: dict(lon, lat, z, u, v). Returns None if < min_fixes fixes inside, else
+    dict(lon, lat, edge, mtg) for the `layer` mean, n_fixes, search_km, and with by_depth=True
+    also lon_z, lat_z, edge_z (one centre per SADCP level). edge = minimum on the box edge
+    (no real minimum)."""
+    a_lon, a_lat = np.asarray(adcp["lon"], float), np.asarray(adcp["lat"], float)
+    z = np.asarray(adcp["z"], float)
+    inside = MplPath(eddy["outer"]).contains_points(np.c_[a_lon, a_lat])
+    inside &= np.isfinite(a_lon) & np.isfinite(a_lat)
+    if inside.sum() < min_fixes:
+        return None
+    clon, clat = eddy["center"]
+    ox, oy = to_xy(eddy["outer"][:, 0], eddy["outer"][:, 1], clon, clat)
+    search = min(NEN_SEARCH_KM, float(np.nanmax(np.hypot(ox, oy))))   # outer radius
+    lo, la = a_lon[inside], a_lat[inside]
+    uu, vv = np.asarray(adcp["u"])[inside], np.asarray(adcp["v"])[inside]
+    lay = (z >= layer[0]) & (z <= layer[1])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        ul, vl = np.nanmean(uu[:, lay], axis=1), np.nanmean(vv[:, lay], axis=1)
+    nl = nencioli_center(lo, la, ul[:, None], vl[:, None], clon, clat, search_km=search)
+    out = dict(lon=float(nl["lon"][0]), lat=float(nl["lat"][0]), edge=bool(nl["edge"][0]),
+               mtg=float(nl["mtg"][0]), n_fixes=int(inside.sum()), search_km=search)
+    if by_depth:
+        nd = nencioli_center(lo, la, uu, vv, clon, clat, search_km=search)
+        out.update(lon_z=nd["lon"], lat_z=nd["lat"], edge_z=nd["edge"])
+    return out
+
+
+def contour_radius_km(xy, lon0, lat0):
+    """Equivalent radius sqrt(area / pi) of a closed lon/lat contour, km."""
+    x, y = to_xy(xy[:, 0], xy[:, 1], lon0, lat0)
+    area = 0.5 * abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
+    return float(np.sqrt(area / np.pi))

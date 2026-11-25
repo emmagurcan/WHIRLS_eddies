@@ -1,5 +1,6 @@
 data/
 figures/
+analysis/LAVD/Lagrangian-Averaged-Vorticity-Deviation-LAVD
 .DS_Store
 .vscode/
 .venv/

@@ -23,7 +23,10 @@ OUT=$ROOT/data/TOEDDIES/VARDYN_$RUN
 
 # Overlap parameters (in 6-h time steps and 0.1-deg grid points)
 MAX_DELTA=4     # look up to 1 day ahead
-DIST_LIM=10     # ~1 deg (~90-110 km) search radius for the extremum
+DIST_LIM=30     # search radius for the extremum (grid points). Chosen from a sweep on
+                # VarDyn June (5..80): edges, splits and merges saturate at 25-30 and are
+                # identical from 30 to 80, so 30 truncates no overlapping pair.
+                # 10 (~1 deg) missed splits/merges whose centers are >1 deg apart.
 
 # 1. Clean the files (lon/lat units, finite fill values)
 python $ROOT/analysis/prep_vardyn_toeddies.py $RAW $CLEAN

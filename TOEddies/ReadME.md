@@ -73,3 +73,31 @@ to plot:
 
 /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/Detection_eddies/Trajectories/Analysis/draw_segments.py output_final.gt out.gv
 xdot out.gv
+
+For VarDyn
+mkdir -p /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/data/TOEDDIES/VARDYN_july && cd /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/data/TOEDDIES/VARDYN_july
+
+cat > inst_eddies_nml.txt <<'EOF'&config_nml min_amp = 0.001, max_radius = 50, 50, min_radius = 25./                                      
+&input_ssh_nml nc_time = 1, ssh_varname = "ssh", u_varname = "u", v_varname = "v"/
+&read_grid_inst_eddies_nml periodic = f, uniform_lon_lat = t, stag_u = 0, 0, stag_v = 0, 0/
+EOF
+
+/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/Inst_eddies/Create_slice/inst_eddies.py --init_date 568 /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/data/VARDYN/VarDyn-QG-july/VarDyn-QG-july_y2026m*.nc < inst_eddies_nml.txt
+
+/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/build/Overlap/eddy_graph.sh 1 .
+
+mkdir graph_C
+
+mv edgelist.csv isolated_nodes.txt e_overestim.txt graph_C
+
+cd graph_C                   
+
+/Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/Detection_eddies/Trajectories/del_vert.py output1.gt output2.gt              
+    /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/Detection_eddies/Trajectories/delta_intra_seg.py output2.gt
+    /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/Detection_eddies/Trajectories/stat_intra_seg.py delta_intra_seg.nc
+    /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/Detection_eddies/Trajectories/cost_function.py output2.gt output3.gt
+    /Users/emmagurcan/Documents/France/ENS/Speich/WHIRLS/TOEddies/Detection_eddies/Trajectories/trajectories.py output3.gt output_final.gt
+    
+same for ac
+
+For VarDyn: &CONFIG_GRAPH_NML MAX_DELTA=4, DIST_LIM=10 /
